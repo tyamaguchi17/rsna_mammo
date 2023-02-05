@@ -22,10 +22,10 @@ defaults:
 # Preprocessing
 #====
 preprocessing:
-  h_resize_to: 768
-  w_resize_to: 384
-  mean: [0.485, 0.456, 0.406]
-  std: [0.229, 0.224, 0.225]
+  h_resize_to: 1024
+  w_resize_to: 512
+  mean: 0.485 # [0.485, 0.456, 0.406]
+  std: 0.229 # [0.229, 0.224, 0.225]
 
 
 #====
@@ -41,7 +41,7 @@ model:
   head: ${head}
   output_dim: ${dataset.num_classes}
   pool: ${pool}
-  use_bn: true
+  use_bn: false
   in_chans: 2
   grad_checkpointing: false
 

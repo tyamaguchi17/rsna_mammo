@@ -1,14 +1,22 @@
 type: rsna_mammo
 
 num_classes: 1
-num_folds: 5
+num_folds: 4
 test_fold: 0  # Test fold for N-fold CV. Should be in [0, num_folds).
 val_fold: ${dataset.test_fold}  # Validation fold for N-fold CV. Should be in [0, num_folds).
 seed: 2023
 num_records: 0
 phase: "train"
 augmentation:
+  p_th: 0.5
+  roi_th_min: 0.08
+  roi_th_max: 0.12
   p_crop_resize: 0.75
-  bbox_size_scale_min: 0.9
-  bbox_size_scale_max: 1.1
+  bbox_size_scale_min: 0.75
+  bbox_size_scale_max: 1.25
+  p_shuffle_view: 0.1
+  p_dup_view_1: 0.1
+  p_dup_view_2: 0.1
+  p_mask_view_1 : 0.1
+  p_mask_view_2: 0.1
 use_cache: false

@@ -60,15 +60,14 @@ def init_model_from_config(cfg: DictConfig, pretrained: bool):
 
 
 def init_backbone(cfg: DictConfig, pretrained: bool) -> BackboneBase:
-    if cfg.use_encoder_2d or cfg.use_encoder_1d:
-        in_chans = cfg.encoder.out_chans
-    else:
-        in_chans = cfg.in_chans
+    in_chans = cfg.in_chans
     backbone = load_backbone(
         base_model=cfg.base_model,
         pretrained=pretrained,
         in_chans=in_chans,
     )
+    if cfg.grad_checkpointing:
+        backbone.set_grad_checkpointing()
     if cfg.freeze_backbone:
         for param in backbone.parameters():
             param.requires_grad = False
