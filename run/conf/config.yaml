@@ -42,7 +42,8 @@ model:
   output_dim: ${dataset.num_classes}
   pool: ${pool}
   use_bn: true
-  in_chans: 6
+  in_chans: 2
+  grad_checkpointing: false
 
 
 pool:
