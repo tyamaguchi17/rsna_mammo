@@ -1,6 +1,5 @@
 from typing import Dict
 
-import pandas as pd
 from omegaconf import DictConfig
 
 from src.datasets.rsna_mammo import RSNADataset
@@ -40,7 +39,6 @@ def get_rsna_dataset(
         fold_path=cfg.fold_path,
     )
 
-
     if phase == "train":
         train_df = df[(df["fold"] != val_fold) & (df["fold"] != test_fold)]
         val_df = df[df["fold"] == val_fold]
@@ -50,13 +48,13 @@ def get_rsna_dataset(
         val_dataset = RSNADataset(val_df, phase="test", cfg=cfg)
         test_dataset = RSNADataset(test_df, phase="test", cfg=cfg)
     elif phase == "valid":
-        train_dataset = RSNADataset(df_train, phase="test", cfg=cfg)
-        val_dataset = RSNADataset(df_train, phase="test", cfg=cfg)
-        test_dataset = RSNADataset(df_train, phase="test", cfg=cfg)
+        train_dataset = RSNADataset(train_df, phase="test", cfg=cfg)
+        val_dataset = RSNADataset(train_df, phase="test", cfg=cfg)
+        test_dataset = RSNADataset(train_df, phase="test", cfg=cfg)
     elif phase == "test":
-        train_dataset = RSNADataset(df_test, phase="test", cfg=cfg)
-        val_dataset = RSNADataset(df_test, phase="test", cfg=cfg)
-        test_dataset = RSNADataset(df_test, phase="test", cfg=cfg)
+        train_dataset = RSNADataset(test_df, phase="test", cfg=cfg)
+        val_dataset = RSNADataset(test_df, phase="test", cfg=cfg)
+        test_dataset = RSNADataset(test_df, phase="test", cfg=cfg)
 
     datasets = {"train": train_dataset, "val": val_dataset, "test": test_dataset}
     return datasets

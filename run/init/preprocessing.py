@@ -133,7 +133,7 @@ class Preprocessing:
         return aug
 
     def get_val_transform(self) -> A.Compose:
-        cfg = self.aug_cfg
+        # cfg = self.aug_cfg
         transforms = [
             # Targets: image, mask, bboxes, keypoints
             A.Resize(self.h_resize_to, self.w_resize_to, p=1),
@@ -146,7 +146,7 @@ class Preprocessing:
         return aug
 
     def get_test_transform(self) -> A.Compose:
-        cfg = self.aug_cfg
+        # cfg = self.aug_cfg
         transforms = [
             # Targets: image, mask, bboxes, keypoints
             A.Resize(self.h_resize_to, self.w_resize_to, p=1),

@@ -107,7 +107,7 @@ def main(cfg: DictConfig, pl_model: type) -> Path:
                 best_ckpt = initial_best_model
                 logger.info("The best model isn't changed.")
 
-            current_epoch = trainer.current_epoch
+            # current_epoch = trainer.current_epoch
             try:
                 state_dict = torch.load(best_ckpt, map_location="cpu")["state_dict"]
             except FileNotFoundError:

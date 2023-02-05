@@ -1,24 +1,33 @@
 import random
+import warnings
 from pathlib import Path
+from typing import Optional
 
 import cv2
 import numpy as np
 import pandas as pd
-import warnings
-import random
+from pfio.cache import MultiprocessFileCache
 from sklearn.model_selection import GroupKFold
 from torch.utils.data import Dataset
-from omegaconf import OmegaConf
-from typing import Optional
-
-import pfio
-from pfio.cache import MultiprocessFileCache
 
 # from src.utils.directory_in_zip import DirectoryInZip
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 META_DATA_LIST = ["biopsy", "invasive", "age", "machine_id", "machine_id_enc"]
-MACHINE_ID_ENCODER = {49:0, 48:1, 29:2, 21:3, 93:4, 216: 5, 210:6, 170:7, 190:8, 197: 9, -1:10}
+MACHINE_ID_ENCODER = {
+    49: 0,
+    48: 1,
+    29: 2,
+    21: 3,
+    93: 4,
+    216: 5,
+    210: 6,
+    170: 7,
+    190: 8,
+    197: 9,
+    -1: 10,
+}
+
 
 class RSNADataset(Dataset):
     """Dataset class for rsna mammo."""
@@ -32,6 +41,7 @@ class RSNADataset(Dataset):
         seed: int = 2023,
         num_records: int = 0,
         fold_path: Optional[str] = "./fold/train_with_fold.csv",
+        data_type: str = "train",
     ) -> pd.DataFrame:
         root = cls.ROOT_PATH
 
@@ -44,7 +54,6 @@ class RSNADataset(Dataset):
         elif data_type == "test":
             df = pd.read_csv(str(root / "sample_submission.csv"))
             return df
-
 
         n_splits = num_folds
         shuffle = True
@@ -65,7 +74,11 @@ class RSNADataset(Dataset):
         return df
 
     def __init__(
-        self, df: pd.DataFrame, phase="train", cfg=None, data_name="rsna",
+        self,
+        df: pd.DataFrame,
+        phase="train",
+        cfg=None,
+        data_name="rsna",
     ) -> None:
         self.df = df.copy()
         self.df["original_index"] = df.index
@@ -87,11 +100,12 @@ class RSNADataset(Dataset):
 
         if cfg.use_cache:
             cache_dir = "/tmp/rsna"
-            self._cache = MultiprocessFileCache(len(self), dir=cache_dir, do_pickle=True)
+            self._cache = MultiprocessFileCache(
+                len(self), dir=cache_dir, do_pickle=True
+            )
         else:
             cache_dir = None
             self._cache = None
-
 
     def __len__(self) -> int:
         return len(self.df)
@@ -114,8 +128,16 @@ class RSNADataset(Dataset):
             image_id = row["image_id"]
             lat = row["laterality"]
             view = row["view"]
-            _lat_diff = [_image_id for _view, _lat, _image_id in patient_view_dict[patient_id] if _lat != lat]
-            _view_diff = [_image_id for _view, _lat, _image_id in patient_view_dict[patient_id] if _lat == lat and _view != view]
+            _lat_diff = [
+                _image_id
+                for _view, _lat, _image_id in patient_view_dict[patient_id]
+                if _lat != lat
+            ]
+            _view_diff = [
+                _image_id
+                for _view, _lat, _image_id in patient_view_dict[patient_id]
+                if _lat == lat and _view != view
+            ]
             if len(_lat_diff) == 0:
                 _lat_diff = [image_id]
             if len(_view_diff) == 0:
@@ -151,18 +173,20 @@ class RSNADataset(Dataset):
         root = self.ROOT_PATH
         if self.data_name == "rsna":
             patient_id = self.patient_dict[image_id]
-            path = root / f'{patient_id}/{image_id}.png'
-            img = cv2.imread(str(path))
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            return img
+            path = root / f"{patient_id}/{image_id}.png"
+            image = cv2.imread(str(path))
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            return image
 
     def read_image(self, image_id):
         if self._cache:
             image = self._cache.get_and_cache(image_id, self._read_image)
         else:
             image = self.read_data(image_id)
+        return image
 
     def augmentation_2(self, image_1, image_2):
+        cfg = self.cfg_aug
         if random.uniform(0, 1) < cfg.p_shuffle_view:
             image_1, image_2 = image_2, image_1
         view_1_dup_flag = random.uniform(0, 1) < cfg.p_dup_view_1
@@ -179,10 +203,9 @@ class RSNADataset(Dataset):
                 image_1 *= 0
             if view_2_mask_flag:
                 image_2 *= 0
-         return image_1, image_2
+        return image_1, image_2
 
     def augmentation(self, images):
-        cfg = self.cfg_aug
         if len(images) == 2:
             image_1, image_2 = images
             image_1, image_2 = self.augmentation_2(image_1, image_2)
@@ -207,14 +230,14 @@ class RSNADataset(Dataset):
         else:
             image_id_view_3 = self.df.iloc[index, "lat_diff_image_ids"][0]
         index_2 = self.idx_dict[image_id_view_3]
-        image_id_view_3, image_id_view_4 = get_multi_view_ids(index_2)
+        image_id_view_3, image_id_view_4 = self.get_multi_view_ids(index_2)
         return image_id_view_3, image_id_view_4
 
-    def get_roi_crop(self, img, threshold=0.1, buffer=30):
-        y_max, x_max = img.shape
-        img2 = img > img.mean()
-        y_mean = img2.mean(1)
-        x_mean = img2.mean(0)
+    def get_roi_crop(self, image, threshold=0.1, buffer=30):
+        y_max, x_max = image.shape
+        image2 = image > image.mean()
+        y_mean = image2.mean(1)
+        x_mean = image2.mean(0)
         x_mean[:5] = 0
         x_mean[-5:] = 0
         y_mean[:5] = 0
@@ -226,11 +249,15 @@ class RSNADataset(Dataset):
         if len(x_slice) == 0:
             x_start, x_end = 0, x_max
         else:
-            x_start, x_end = max(x_slice.min() - buffer, 0), min(x_slice.max() + buffer, x_max)
+            x_start, x_end = max(x_slice.min() - buffer, 0), min(
+                x_slice.max() + buffer, x_max
+            )
         if len(y_slice) == 0:
             y_start, y_end = 0, y_max
         else:
-            y_start, y_end = max(y_slice.min() - buffer, 0), min(y_slice.max() + buffer, y_max)
+            y_start, y_end = max(y_slice.min() - buffer, 0), min(
+                y_slice.max() + buffer, y_max
+            )
         return x_start, y_start, x_end, y_end
 
     def get_bbox_aug(self, image):
@@ -241,7 +268,9 @@ class RSNADataset(Dataset):
             th = 0.1
         x_min, y_min, x_max, y_max = self.get_roi_crop(image, threshold=th)
         if random.uniform(0, 1) < cfg.p_crop_resize:
-            crop_scale = random.uniform(cfg.bbox_size_scale_min, cfg.bbox_size_scale_max)
+            crop_scale = random.uniform(
+                cfg.bbox_size_scale_min, cfg.bbox_size_scale_max
+            )
             x_g = (x_min + x_max) / 2
             y_g = (y_min + y_max) / 2
             dx = x_max - x_min
@@ -283,10 +312,9 @@ class RSNADataset(Dataset):
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
-            "label": cancer,
+            "label": label,
             "image_1": image_1,
             "image_2": image_2,
-
         }
         res.update(meta_data)
 

@@ -7,7 +7,6 @@ from omegaconf import DictConfig
 from torch import Tensor
 
 
-
 class Forwarder(nn.Module):
     def __init__(self, cfg: DictConfig, model: nn.Module) -> None:
         super().__init__()
@@ -18,6 +17,7 @@ class Forwarder(nn.Module):
         self,
         logits,
         labels,
+        mean=True,
     ) -> Tensor:
 
         loss = F.binary_cross_entropy_with_logits(

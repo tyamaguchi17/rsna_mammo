@@ -33,7 +33,7 @@ def pf_score(labels, predictions, percentile=0):
 
     for idx in range(len(labels)):
         prediction = min(max(predictions[idx], 0), 1)
-        if (labels[idx]):
+        if labels[idx]:
             y_true_count += 1
             ctp += prediction
         else:
@@ -42,8 +42,12 @@ def pf_score(labels, predictions, percentile=0):
     beta_squared = beta * beta
     c_precision = ctp / (ctp + cfp)
     c_recall = ctp / y_true_count
-    if (c_precision > 0 and c_recall > 0):
-        result = (1 + beta_squared) * (c_precision * c_recall) / (beta_squared * c_precision + c_recall)
+    if c_precision > 0 and c_recall > 0:
+        result = (
+            (1 + beta_squared)
+            * (c_precision * c_recall)
+            / (beta_squared * c_precision + c_recall)
+        )
         return result
     else:
         return 0
@@ -144,7 +148,6 @@ class PLModel(LightningModule):
                 result = np.concatenate([x[key] for x in outputs])
                 epoch_results[key] = result
 
-
         if phase == "test" and self.trainer.global_rank == 0:
             # Save test results ".npz" format
             test_results_filepath = Path(self.cfg.out_dir) / "test_results"
@@ -182,18 +185,18 @@ class PLModel(LightningModule):
 
         pred = epoch_results["pred"][:, 0]
         label = epoch_results["label"][:, 0]
-        pf_score = pf_score(label, pred)
+        pf_score_000 = pf_score(label, pred)
         pf_score_985 = pf_score(label, pred, percentile=98.5)
         pf_score_983 = pf_score(label, pred, percentile=98.3)
         pf_score_980 = pf_score(label, pred, percentile=98.0)
         try:
             auc_score = roc_auc_score(label.reshape(-1), pred.reshape(-1))
-        except:
+        except Exception:
             auc_score = 0
 
         # Log items
         self.log(f"{phase}/loss", mean_loss, prog_bar=True)
-        self.log(f"{phase}/pf_score", pf_score, prog_bar=True)
+        self.log(f"{phase}/pf_score", pf_score_000, prog_bar=True)
         self.log(f"{phase}/pf_score_985", pf_score_985, prog_bar=True)
         self.log(f"{phase}/pf_score_983", pf_score_983, prog_bar=True)
         self.log(f"{phase}/pf_score_980", pf_score_980, prog_bar=True)

@@ -10,6 +10,7 @@ from .backbones.efficientnet import EfficientNetBackbone
 from .backbones.resnet import ResNetBackbone
 from .backbones.swin_transformer import SwinTransformerBackbone
 
+
 def load_backbone(
     base_model: str,
     pretrained: bool,
