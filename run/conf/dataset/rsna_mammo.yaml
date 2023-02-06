@@ -7,6 +7,9 @@ val_fold: ${dataset.test_fold}  # Validation fold for N-fold CV. Should be in [0
 seed: 2023
 num_records: 0
 phase: "train"
+use_cache: false
+roi_th: 0.1
+roi_buffer: 30
 augmentation:
   p_th: 0.5
   roi_th_min: 0.08
@@ -19,4 +22,3 @@ augmentation:
   p_dup_view_2: 0.1
   p_mask_view_1 : 0.1
   p_mask_view_2: 0.1
-use_cache: false

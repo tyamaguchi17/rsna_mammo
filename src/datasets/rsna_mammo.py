@@ -97,6 +97,8 @@ class RSNADataset(Dataset):
         self.root = self.ROOT_PATH
         self.phase = phase
         self.cfg_aug = cfg.augmentation
+        self.roi_th = cfg.roi_th
+        self.roi_buffer = cfg.roi_buffer
 
         if cfg.use_cache:
             cache_dir = "/tmp/rsna"
@@ -265,8 +267,9 @@ class RSNADataset(Dataset):
         if random.uniform(0, 1) < cfg.p_th:
             th = random.uniform(cfg.roi_th_min, cfg.roi_th_max)
         else:
-            th = 0.1
-        x_min, y_min, x_max, y_max = self.get_roi_crop(image, threshold=th)
+            th = self.roi_th
+            buffer = self.roi_buffer
+        x_min, y_min, x_max, y_max = self.get_roi_crop(image, threshold=th, buffer=buffer)
         if random.uniform(0, 1) < cfg.p_crop_resize:
             crop_scale = random.uniform(
                 cfg.bbox_size_scale_min, cfg.bbox_size_scale_max
@@ -284,7 +287,9 @@ class RSNADataset(Dataset):
         return x_min, y_min, x_max, y_max
 
     def get_bbox(self, image):
-        return self.get_roi_crop(image)
+        th = self.roi_th
+        buffer = self.roi_buffer
+        return self.get_roi_crop(image, threshold=th, buffer=buffer)
 
     def __getitem__(self, index: int):
 
