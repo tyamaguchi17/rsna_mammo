@@ -133,6 +133,8 @@ class PLModel(LightningModule):
             "original_index",
             "image_id",
             "image_id_2",
+            "patient_id",
+            "laterality",
             "label",
             "pred",
             "embed_features",
@@ -148,6 +150,24 @@ class PLModel(LightningModule):
                 result = np.concatenate([x[key] for x in outputs])
                 epoch_results[key] = result
 
+        df = pd.DataFrame(
+            data={
+                "original_index": epoch_results["original_index"].reshape(-1),
+                "image_id": epoch_results["image_id"].reshape(-1),
+                "image_id_2": epoch_results["image_id_2"].reshape(-1),
+                "patient_id": epoch_results["patient_id"].reshape(-1),
+                "laterality": epoch_results["laterality"].reshape(-1),
+            }
+        )
+        df["pred"] = epoch_results["pred"][:, 0].reshape(-1)
+        df["label"] = epoch_results["label"][:, 0].reshape(-1)
+        df = (
+            df.drop_duplicates()
+            .groupby(by="original_index")
+            .mean()
+            .reset_index()
+            .sort_values(by="original_index")
+        )
         if phase == "test" and self.trainer.global_rank == 0:
             # Save test results ".npz" format
             test_results_filepath = Path(self.cfg.out_dir) / "test_results"
@@ -156,22 +176,6 @@ class PLModel(LightningModule):
             np.savez_compressed(
                 str(test_results_filepath / "test_results.npz"),
                 **epoch_results,
-            )
-            df = pd.DataFrame(
-                data={
-                    "original_index": epoch_results["original_index"].reshape(-1),
-                    "image_id": epoch_results["image_id"].reshape(-1),
-                    "image_id_2": epoch_results["image_id_2"].reshape(-1),
-                }
-            )
-            df["pred"] = epoch_results["pred"][:, 0].reshape(-1)
-            df["label"] = epoch_results["label"][:, 0].reshape(-1)
-            df = (
-                df.drop_duplicates()
-                .groupby(by="original_index")
-                .mean()
-                .reset_index()
-                .sort_values(by="original_index")
             )
             df.to_csv(test_results_filepath / "test_results.csv", index=False)
 
@@ -183,8 +187,11 @@ class PLModel(LightningModule):
         )
         mean_loss = np.mean(loss)
 
-        pred = epoch_results["pred"][:, 0]
-        label = epoch_results["label"][:, 0]
+        df = df[["patient_id", "laterality", "label", "pred"]]
+        df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
+
+        pred = df["pred"].values
+        label = df["label"].values
         pf_score_000 = pf_score(label, pred)
         pf_score_985 = pf_score(label, pred, percentile=98.5)
         pf_score_983 = pf_score(label, pred, percentile=98.3)

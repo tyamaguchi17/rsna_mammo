@@ -269,7 +269,9 @@ class RSNADataset(Dataset):
         else:
             th = self.roi_th
             buffer = self.roi_buffer
-        x_min, y_min, x_max, y_max = self.get_roi_crop(image, threshold=th, buffer=buffer)
+        x_min, y_min, x_max, y_max = self.get_roi_crop(
+            image, threshold=th, buffer=buffer
+        )
         if random.uniform(0, 1) < cfg.p_crop_resize:
             crop_scale = random.uniform(
                 cfg.bbox_size_scale_min, cfg.bbox_size_scale_max
@@ -295,6 +297,9 @@ class RSNADataset(Dataset):
 
         image_id_view_1, image_id_view_2 = self.get_multi_view_ids(index)
         label = self.df.loc[index, "cancer"]
+        patient_id = self.df.loc[index, "patient_id"]
+        site_id = self.df.loc[index, "site_id"]
+        laterality = self.df.loc[index, "laterality"]
 
         image_1 = self.read_image(image_id_view_1)
         image_2 = self.read_image(image_id_view_2)
@@ -317,6 +322,9 @@ class RSNADataset(Dataset):
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
+            "patient_id": patient_id,
+            "laterality": laterality,
+            "site_id": site_id,
             "label": label,
             "image_1": image_1,
             "image_2": image_2,
