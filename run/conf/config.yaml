@@ -63,13 +63,13 @@ head:
 # Forwarder
 #====
 forwarder:
-  tta:  # test-time augmentation
-    flip_h: true
-    rot90: false
-    rot180: false
   loss:
+    cancer_weight: 1.0
+    biopsy_weight: 0.0
+    invasive_weight: 0.0
     age_weight: 0.0
     machine_id_weight: 0.0
+    site_id_weight: 0.0
 
 #====
 # Dataset
@@ -112,8 +112,8 @@ training:
   debug: false  # If true, run in a debug mode
   use_wandb: false # If true, WandbLogger will be used
   seed: 0  # Random seed passed for seed_everything
-  monitor: val/auc
-  monitor_mode: max
+  monitor: val/loss
+  monitor_mode: min
   gradient_clip_val: 0.5
   accumulate_grad_batches: 1
   save_embed: false

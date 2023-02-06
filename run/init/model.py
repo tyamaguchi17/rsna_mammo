@@ -43,10 +43,29 @@ def init_model_from_config(cfg: DictConfig, pretrained: bool):
 
     model.add_module("forward_features", forward_features)
     if cfg.head.type == "linear":
-        head = nn.Linear(backbone.out_features, cfg.output_dim, bias=True)
+        # "cancer", "biopsy", "invasive", "age_3", "machine_id_enc", "site_id"
+        head = nn.Linear(backbone.out_features, 1, bias=True)
+        head_biopsy = nn.Linear(backbone.out_features, 1, bias=True)
+        head_invasive = nn.Linear(backbone.out_features, 1, bias=True)
+        head_age = nn.Linear(backbone.out_features, 30, bias=True)  # とりあえず3歳刻み
+        head_machine_id = nn.Linear(backbone.out_features, 11, bias=True)
+        head_site_id = nn.Linear(backbone.out_features, 1, bias=True)
+        # LR model
+        # "cancer", "biopsy", "invasive"
+        # head_2 = nn.Linear(backbone.out_features, 1, bias=True)
+        # head_biopsy_2 = nn.Linear(backbone.out_features, 1, bias=True)
+        # head_invasive_2 = nn.Linear(backbone.out_features, 1, bias=True)
     else:
         raise ValueError(f"{cfg.head.type} is not implemented")
     model.add_module("head", head)
+    model.add_module("head_biopsy", head_biopsy)
+    model.add_module("head_invasive", head_invasive)
+    model.add_module("head_age", head_age)
+    model.add_module("head_machine_id", head_machine_id)
+    model.add_module("head_site_id", head_site_id)
+    # model.add_module("head_2", head_2)
+    # model.add_module("head_biopsy_2", head_biopsy_2)
+    # model.add_module("head_invasive_2", head_invasive_2)
 
     if cfg.restore_path is not None:
         logger.info(f'Loading weights from "{cfg.restore_path}"...')

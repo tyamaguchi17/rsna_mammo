@@ -13,7 +13,14 @@ from torch.utils.data import Dataset
 # from src.utils.directory_in_zip import DirectoryInZip
 warnings.filterwarnings("ignore")
 
-META_DATA_LIST = ["biopsy", "invasive", "age", "machine_id", "machine_id_enc"]
+META_DATA_LIST = [
+    "biopsy",
+    "invasive",
+    "age",
+    "site_id",
+    "machine_id",
+    "machine_id_enc",
+]
 MACHINE_ID_ENCODER = {
     49: 0,
     48: 1,
@@ -168,7 +175,10 @@ class RSNADataset(Dataset):
         res = {}
         data = self.df.iloc[idx]
         for meta in META_DATA_LIST:
-            res[meta] = data[meta]
+            res[meta] = data[meta].astype(np.int64)
+        res["age_3"] = (data[meta] // 3).astype(np.int64)
+        res["age_5"] = (data[meta] // 5).astype(np.int64)
+        res["age_10"] = (data[meta] // 10).astype(np.int64)
         return res
 
     def _read_image(self, image_id):
@@ -298,7 +308,6 @@ class RSNADataset(Dataset):
         image_id_view_1, image_id_view_2 = self.get_multi_view_ids(index)
         label = self.df.loc[index, "cancer"]
         patient_id = self.df.loc[index, "patient_id"]
-        site_id = self.df.loc[index, "site_id"]
         laterality = self.df.loc[index, "laterality"]
 
         image_1 = self.read_image(image_id_view_1)
@@ -320,15 +329,17 @@ class RSNADataset(Dataset):
 
         res = {
             "original_index": self.df.at[index, "original_index"],
-            "image_id": image_id_view_1,
-            "image_id_2": image_id_view_2,
-            "patient_id": patient_id,
+            "image_id": image_id_view_1.astype(np.int64),
+            "image_id_2": image_id_view_2.astype(np.int64),
+            "patient_id": patient_id.astype(np.int64),
             "laterality": laterality,
-            "site_id": site_id,
-            "label": label,
+            "label": label.astype(np.int64),
             "image_1": image_1,
             "image_2": image_2,
         }
         res.update(meta_data)
+        # res["label_2"] = res["label"]
+        # res["biopsy_2"] = res["biopsy"]
+        # res["invasive_2"] = res["invasive"]
 
         return res

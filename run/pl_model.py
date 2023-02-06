@@ -22,7 +22,7 @@ from src.datasets.wrapper import WrapperDataset
 logger = getLogger(__name__)
 
 
-def pf_score(labels, predictions, percentile=0):
+def pf_score(labels, predictions, percentile=0, bin=False):
     beta = 1
     y_true_count = 0
     ctp = 0
@@ -30,6 +30,8 @@ def pf_score(labels, predictions, percentile=0):
 
     th = np.percentile(predictions, percentile)
     predictions[np.where(predictions < th)] = 0
+    if bin:
+        predictions[np.where(predictions >= th)] = 1
 
     for idx in range(len(labels)):
         prediction = min(max(predictions[idx], 0), 1)
@@ -95,7 +97,7 @@ class PLModel(LightningModule):
 
     def training_step(self, batch: Dict[str, Tensor], batch_idx: int):
         additional_info = {}
-        _, loss, _ = self.forwarder.forward(
+        _, loss, _, _, _, _, _, _ = self.forwarder.forward(
             batch, phase="train", epoch=self.current_epoch, **additional_info
         )
 
@@ -159,8 +161,15 @@ class PLModel(LightningModule):
                 "laterality": epoch_results["laterality"].reshape(-1),
             }
         )
-        df["pred"] = epoch_results["pred"][:, 0].reshape(-1)
+        df["pred"] = sigmoid(epoch_results["pred"][:, 0].reshape(-1))
         df["label"] = epoch_results["label"][:, 0].reshape(-1)
+        df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
+        df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
+        df["pred_age"] = epoch_results["pred_invasive"].argmax(axis=1).reshape(-1) * 3
+        df["pred_machine_id"] = (
+            epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
+        )
+        df["pred_site_id"] = (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
         df = (
             df.drop_duplicates()
             .groupby(by="original_index")
@@ -189,6 +198,14 @@ class PLModel(LightningModule):
 
         df = df[["patient_id", "laterality", "label", "pred"]]
         df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
+        if phase != "test" and self.trainer.global_rank == 0:
+            test_results_filepath = Path(self.cfg.out_dir) / "test_results"
+            if not test_results_filepath.exists():
+                test_results_filepath.mkdir(exist_ok=True)
+            df.to_csv(
+                test_results_filepath / f"epoch_{self.current_epoch}_results.csv",
+                index=False,
+            )
 
         pred = df["pred"].values
         label = df["label"].values
@@ -196,6 +213,7 @@ class PLModel(LightningModule):
         pf_score_985 = pf_score(label, pred, percentile=98.5)
         pf_score_983 = pf_score(label, pred, percentile=98.3)
         pf_score_980 = pf_score(label, pred, percentile=98.0)
+        f1_score_983 = pf_score(label, pred, percentile=98.3, bin=True)
         try:
             auc_score = roc_auc_score(label.reshape(-1), pred.reshape(-1))
         except Exception:
@@ -207,6 +225,7 @@ class PLModel(LightningModule):
         self.log(f"{phase}/pf_score_985", pf_score_985, prog_bar=True)
         self.log(f"{phase}/pf_score_983", pf_score_983, prog_bar=True)
         self.log(f"{phase}/pf_score_980", pf_score_980, prog_bar=True)
+        self.log(f"{phase}/f1_score_983", f1_score_983, prog_bar=True)
         self.log(f"{phase}/auc", auc_score, prog_bar=True)
 
     def _evaluation_step(self, batch: Dict[str, Tensor], phase: Literal["val", "test"]):
@@ -214,6 +233,11 @@ class PLModel(LightningModule):
             preds,
             loss,
             embed_features,
+            preds_biopsy,
+            preds_invasive,
+            preds_age,
+            preds_machine_id,
+            preds_site_id,
         ) = self.forwarder.forward(batch, phase=phase, epoch=self.current_epoch)
 
         output = {
@@ -223,6 +247,11 @@ class PLModel(LightningModule):
             "image_id": batch["image_id"],
             "image_id_2": batch["image_id_2"],
             "pred": preds.detach(),
+            "pred_biopsy": preds_biopsy.detach(),
+            "pred_invasive": preds_invasive.detach(),
+            "pred_age": preds_age.detach(),
+            "pred_machine_id": preds_machine_id.detach(),
+            "pred_site_id": preds_site_id.detach(),
             "embed_features": embed_features.detach(),
         }
         return output
