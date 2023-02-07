@@ -65,7 +65,7 @@ class Preprocessing:
                 A.Normalize(mean=self.mean, std=self.std),
                 ToTensorV2(transpose_mask=True),
             ]
-        if cfg.use_heavy_aug:
+        elif cfg.use_heavy_aug:
             transforms = [
                 A.Resize(self.h_resize_to, self.w_resize_to),
                 A.Affine(

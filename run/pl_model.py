@@ -87,6 +87,7 @@ class PLModel(LightningModule):
                 raw_datasets[phase], transforms[phase], phase
             )
             logger.info(f"{phase}: {len(self.datasets[phase])}")
+            logger.info(f"{phase} positive records: {self.datasets[phase].df["cancer"].sum()}")
 
         logger.info(
             f"training steps per epoch: {len(self.datasets['train'])/cfg.training.batch_size}"
@@ -229,10 +230,10 @@ class PLModel(LightningModule):
 
         # Log items
         self.log(f"{phase}/loss", mean_loss, prog_bar=True)
-        self.log(f"{phase}/pf_score", pf_score_000, prog_bar=True)
-        self.log(f"{phase}/pf_score_985", pf_score_985, prog_bar=True)
+        self.log(f"{phase}/pf_score", pf_score_000, prog_bar=False)
+        self.log(f"{phase}/pf_score_985", pf_score_985, prog_bar=False)
         self.log(f"{phase}/pf_score_983", pf_score_983, prog_bar=True)
-        self.log(f"{phase}/pf_score_980", pf_score_980, prog_bar=True)
+        self.log(f"{phase}/pf_score_980", pf_score_980, prog_bar=False)
         self.log(f"{phase}/f1_score_983", f1_score_983, prog_bar=True)
         self.log(f"{phase}/auc", auc_score, prog_bar=True)
 
