@@ -244,6 +244,7 @@ class PLModel(LightningModule):
             "loss": loss,
             "label": batch["label"],
             "original_index": batch["original_index"],
+            "patient_id": batch["patient_id"],
             "image_id": batch["image_id"],
             "image_id_2": batch["image_id_2"],
             "pred": preds.detach(),
