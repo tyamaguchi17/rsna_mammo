@@ -177,7 +177,7 @@ class PLModel(LightningModule):
         df["pred_site_id"] = (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
         df = (
             df.drop_duplicates()
-            .groupby(by="original_index")
+            .groupby(by=["original_index", "laterality"])
             .mean()
             .reset_index()
             .sort_values(by="original_index")
