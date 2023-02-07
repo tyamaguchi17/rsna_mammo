@@ -55,6 +55,8 @@ class RSNADataset(Dataset):
         if data_type == "train":
             if fold_path is not None:
                 df = pd.read_csv(fold_path)
+                if num_records:
+                    df = df[::num_records]
                 return df
             else:
                 df = pd.read_csv(str(root / "train.csv"))
@@ -228,19 +230,19 @@ class RSNADataset(Dataset):
         return images
 
     def get_multi_view_ids(self, index):
-        image_id_view_1 = self.df.iloc[index, "image_id"]
+        image_id_view_1 = self.df.at[index, "image_id"]
         if self.phase == "train":
-            image_id_view_2 = random.choice(self.df.iloc[index, "view_diff_image_ids"])
+            image_id_view_2 = random.choice(self.df.at[index, "view_diff_image_ids"])
         else:
-            image_id_view_2 = self.df.iloc[index, "view_diff_image_ids"][0]
-        image_id_view_2 = self.df.iloc[index, "view_diff_image_ids"]
+            image_id_view_2 = self.df.at[index, "view_diff_image_ids"][0]
+        image_id_view_2 = self.df.at[index, "view_diff_image_ids"]
         return image_id_view_1, image_id_view_2
 
     def get_different_lat_ids(self, index):
         if self.phase == "train":
-            image_id_view_3 = random.choice(self.df.iloc[index, "lat_diff_image_ids"])
+            image_id_view_3 = random.choice(self.df.at[index, "lat_diff_image_ids"])
         else:
-            image_id_view_3 = self.df.iloc[index, "lat_diff_image_ids"][0]
+            image_id_view_3 = self.df.at[index, "lat_diff_image_ids"][0]
         index_2 = self.idx_dict[image_id_view_3]
         image_id_view_3, image_id_view_4 = self.get_multi_view_ids(index_2)
         return image_id_view_3, image_id_view_4
