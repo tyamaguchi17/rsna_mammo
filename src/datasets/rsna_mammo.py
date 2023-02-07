@@ -193,13 +193,13 @@ class RSNADataset(Dataset):
             path = root / f"{patient_id}/{image_id}.png"
             image = cv2.imread(str(path))
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-            return image
+            return image, 0
 
     def read_image(self, index):
         if self._cache:
-            image = self._cache.get_and_cache(index, self._read_image)
+            image, _ = self._cache.get_and_cache(index, self._read_image)
         else:
-            image = self._read_image(index)
+            image, _ = self._read_image(index)
         return image
 
     def augmentation_2(self, image_1, image_2):
