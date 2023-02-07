@@ -78,6 +78,8 @@ class Forwarder(nn.Module):
 
         # labels
         labels = batch["label"]
+        print(labels)
+        print(labels.dtype)
         labels_biospy = batch["biopsy"]
         labels_invasive = batch["invasive"]
         labels_age = batch["age_3"]
