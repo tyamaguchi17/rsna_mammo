@@ -247,6 +247,7 @@ class PLModel(LightningModule):
             "patient_id": batch["patient_id"],
             "image_id": batch["image_id"],
             "image_id_2": batch["image_id_2"],
+            "laterality": batch["laterality"],
             "pred": preds.detach(),
             "pred_biopsy": preds_biopsy.detach(),
             "pred_invasive": preds_invasive.detach(),
