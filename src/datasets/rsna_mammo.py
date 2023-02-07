@@ -187,7 +187,7 @@ class RSNADataset(Dataset):
 
     def _read_image(self, index):
         root = self.ROOT_PATH
-        image_id = self.at[index, "image_id"]
+        image_id = self.df.at[index, "image_id"]
         if self.data_name == "rsna":
             patient_id = self.patient_dict[image_id]
             path = root / f"{patient_id}/{image_id}.png"
