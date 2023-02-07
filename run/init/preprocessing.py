@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import albumentations as A
 from albumentations.pytorch.transforms import ToTensorV2
@@ -9,8 +9,8 @@ class Preprocessing:
     def __init__(
         self,
         aug_cfg: Optional[DictConfig],
-        mean: List[float],
-        std: List[float],
+        mean: Union[float, List[float]],
+        std: Union[float, List[float]],
         h_resize_to: int,
         w_resize_to: int,
     ):
@@ -18,8 +18,13 @@ class Preprocessing:
             self.aug_cfg = None
         else:
             self.aug_cfg = aug_cfg.copy()
-        self.mean = mean.copy()
-        self.std = std.copy()
+        if isinstance(mean, float):
+            self.mean = mean
+            assert isinstance(std, float)
+            self.std = std
+        else:
+            self.mean = mean.copy()
+            self.std = std.copy()
         self.h_resize_to = h_resize_to
         self.w_resize_to = w_resize_to
 
