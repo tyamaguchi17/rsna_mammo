@@ -19,14 +19,6 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && \
     rm -rf /var/lib/apt/list
 
-
-# Install python package.
-ADD ../requirements.txt  /tmp/requirements.txt
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir torch==${PYTORCH}+cu${CUDA} torchvision==${TORCHVISION}+cu${CUDA} -f https://download.pytorch.org/whl/torch_stable.html && \
-    pip install -r /tmp/requirements.txt
-
-
 WORKDIR /home/working
 
 # Language settings
