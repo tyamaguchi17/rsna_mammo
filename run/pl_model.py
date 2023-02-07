@@ -87,7 +87,7 @@ class PLModel(LightningModule):
                 raw_datasets[phase], transforms[phase], phase
             )
             logger.info(f"{phase}: {len(self.datasets[phase])}")
-            logger.info(f"{phase} positive records: {self.datasets[phase].df['cancer'].sum()}")
+            logger.info(f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()}")
 
         logger.info(
             f"training steps per epoch: {len(self.datasets['train'])/cfg.training.batch_size}"
