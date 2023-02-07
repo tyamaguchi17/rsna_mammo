@@ -132,7 +132,7 @@ training:
 #====
 optimizer:
   type: ???
-  lr_head: 1e-3
+  lr_head: ${optimizer.lr}
 
 
 #====
