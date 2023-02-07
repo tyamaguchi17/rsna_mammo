@@ -281,7 +281,7 @@ class RSNADataset(Dataset):
             th = random.uniform(cfg.roi_th_min, cfg.roi_th_max)
         else:
             th = self.roi_th
-            buffer = self.roi_buffer
+        buffer = self.roi_buffer
         x_min, y_min, x_max, y_max = self.get_roi_crop(
             image, threshold=th, buffer=buffer
         )
