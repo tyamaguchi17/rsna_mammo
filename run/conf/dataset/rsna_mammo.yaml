@@ -4,6 +4,7 @@ num_classes: 1
 num_folds: 4
 test_fold: 0  # Test fold for N-fold CV. Should be in [0, num_folds).
 val_fold: ${dataset.test_fold}  # Validation fold for N-fold CV. Should be in [0, num_folds).
+fold_path: ./fold/train_with_fold.csv
 seed: 2023
 num_records: 0
 phase: "train"
