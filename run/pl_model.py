@@ -186,6 +186,10 @@ class PLModel(LightningModule):
             .reset_index()
             .sort_values(by="original_index")
         )
+        df.to_csv(
+            test_results_filepath / f"epoch_{self.current_epoch}_results_debug.csv",
+            index=False,
+        )
         if phase == "test" and self.trainer.global_rank == 0:
             # Save test results ".npz" format
             test_results_filepath = Path(self.cfg.out_dir) / "test_results"
