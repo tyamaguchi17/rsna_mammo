@@ -112,7 +112,7 @@ class RSNADataset(Dataset):
         self.roi_buffer = cfg.roi_buffer
 
         if cfg.use_cache:
-            cache_dir = "/tmp/rsna"
+            cache_dir = "/tmp/rsna/"
             self._cache = MultiprocessFileCache(
                 len(self), dir=cache_dir, do_pickle=True
             )
