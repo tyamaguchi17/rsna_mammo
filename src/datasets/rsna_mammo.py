@@ -98,6 +98,7 @@ class RSNADataset(Dataset):
         self.df["lat_diff_image_ids"] = lat_diff
         self.df["view_diff_image_ids"] = view_diff
 
+        self.data_name = "rsna"
         if data_name == "rsna":
             self.df["machine_id_enc"] = self.df["machine_id"].map(MACHINE_ID_ENCODER)
             self.patient_dict = self.get_image_patient_map(self.df)
