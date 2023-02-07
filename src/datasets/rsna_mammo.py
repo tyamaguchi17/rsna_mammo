@@ -336,7 +336,7 @@ class RSNADataset(Dataset):
             "image_id_2": image_id_view_2,
             "patient_id": patient_id,
             "laterality": laterality,
-            "label": label.astype(np.float32),
+            "label": label,
             "image_1": image_1,
             "image_2": image_2,
         }

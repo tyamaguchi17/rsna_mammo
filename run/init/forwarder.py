@@ -77,12 +77,12 @@ class Forwarder(nn.Module):
         inputs = batch["image"]
 
         # labels
-        labels = batch["label"]
-        labels_biospy = batch["biopsy"]
-        labels_invasive = batch["invasive"]
+        labels = batch["label"].to(torch.float16)
+        labels_biospy = batch["biopsy"].to(torch.float16)
+        labels_invasive = batch["invasive"].to(torch.float16)
         labels_age = batch["age_3"]
         labels_machine_id = batch["machine_id_enc"]
-        labels_site_id = batch["site_id"] - 1
+        labels_site_id = (batch["site_id"] - 1).to(torch.float16)
 
         # LR model labels
         # labels_2 = batch["label_2"]
