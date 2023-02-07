@@ -87,7 +87,9 @@ class PLModel(LightningModule):
                 raw_datasets[phase], transforms[phase], phase
             )
             logger.info(f"{phase}: {len(self.datasets[phase])}")
-            logger.info(f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()}")
+            logger.info(
+                f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()}"
+            )
 
         logger.info(
             f"training steps per epoch: {len(self.datasets['train'])/cfg.training.batch_size}"
@@ -163,22 +165,26 @@ class PLModel(LightningModule):
 
         df = pd.DataFrame(
             data={
-                "original_index": epoch_results["original_index"].reshape(-1),
-                "image_id": epoch_results["image_id"].reshape(-1),
-                "image_id_2": epoch_results["image_id_2"].reshape(-1),
-                "patient_id": epoch_results["patient_id"].reshape(-1),
-                "laterality": epoch_results["laterality"].reshape(-1),
+                "original_index": epoch_results["original_index"]
+                .reshape(-1)
+                .astype(int),
+                "image_id": epoch_results["image_id"].reshape(-1).astype(int),
+                "image_id_2": epoch_results["image_id_2"].reshape(-1).astype(int),
+                "patient_id": epoch_results["patient_id"].reshape(-1).astype(int),
+                "laterality": epoch_results["laterality"].reshape(-1).astype(int),
             }
         )
         df["pred"] = sigmoid(epoch_results["pred"][:, 0].reshape(-1))
-        df["label"] = epoch_results["label"]
+        df["label"] = epoch_results["label"].astype(int)
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
         df["pred_age"] = epoch_results["pred_invasive"].argmax(axis=1).reshape(-1) * 3
         df["pred_machine_id"] = (
             epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
-        )
-        df["pred_site_id"] = (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
+        ).astype(int)
+        df["pred_site_id"] = (
+            (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
+        ).astype(int)
         df = (
             df.drop_duplicates()
             .groupby(by=["original_index"])
@@ -186,14 +192,6 @@ class PLModel(LightningModule):
             .reset_index()
             .sort_values(by="original_index")
         )
-        if phase != "test" and self.trainer.global_rank == 0:
-            test_results_filepath = Path(self.cfg.out_dir) / "test_results"
-            if not test_results_filepath.exists():
-                test_results_filepath.mkdir(exist_ok=True)
-            df.to_csv(
-                test_results_filepath / f"epoch_{self.current_epoch}_results_debug.csv",
-                index=False,
-            )
         if phase == "test" and self.trainer.global_rank == 0:
             # Save test results ".npz" format
             test_results_filepath = Path(self.cfg.out_dir) / "test_results"

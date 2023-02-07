@@ -179,9 +179,9 @@ class RSNADataset(Dataset):
         data = self.df.iloc[idx]
         for meta in META_DATA_LIST:
             res[meta] = int(data[meta])
-        res["age_3"] = (data[meta] // 3)
-        res["age_5"] = (data[meta] // 5)
-        res["age_10"] = (data[meta] // 10)
+        res["age_3"] = data[meta] // 3
+        res["age_5"] = data[meta] // 5
+        res["age_10"] = data[meta] // 10
         return res
 
     def _read_image(self, image_id):
@@ -335,7 +335,7 @@ class RSNADataset(Dataset):
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
             "patient_id": patient_id,
-            "laterality": {"L":0, "R":1}[laterality] ,
+            "laterality": {"L": 0, "R": 1}[laterality],
             "label": label,
             "image_1": image_1,
             "image_2": image_2,
