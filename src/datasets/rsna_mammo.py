@@ -97,6 +97,7 @@ class RSNADataset(Dataset):
         lat_diff, view_diff = self.get_pair_image_ids_columns(self.df)
         self.df["lat_diff_image_ids"] = lat_diff
         self.df["view_diff_image_ids"] = view_diff
+        self.df = self.df.fillna(0)
 
         self.data_name = "rsna"
         if data_name == "rsna":
