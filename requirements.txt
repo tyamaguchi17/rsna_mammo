@@ -5,7 +5,7 @@ pytorch-lightning==1.6.5
 torch-optimizer==0.3.0
 opencv-python==4.5.5.64
 wandb==0.12.16
-timm==0.6.7
+timm==0.8.6dev0
 scikit-learn==1.1.2
 pfio==1.0.1
 transformers==4.19.1
