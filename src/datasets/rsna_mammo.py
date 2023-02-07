@@ -185,8 +185,9 @@ class RSNADataset(Dataset):
         res["age_10"] = data[meta] // 10
         return res
 
-    def _read_image(self, image_id):
+    def _read_image(self, index):
         root = self.ROOT_PATH
+        image_id = self.at[index, "image_id"]
         if self.data_name == "rsna":
             patient_id = self.patient_dict[image_id]
             path = root / f"{patient_id}/{image_id}.png"
@@ -194,11 +195,11 @@ class RSNADataset(Dataset):
             image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             return image
 
-    def read_image(self, image_id):
+    def read_image(self, index):
         if self._cache:
-            image = self._cache.get_and_cache(image_id, self._read_image)
+            image = self._cache.get_and_cache(index, self._read_image)
         else:
-            image = self._read_image(image_id)
+            image = self._read_image(index)
         return image
 
     def augmentation_2(self, image_1, image_2):
@@ -314,8 +315,10 @@ class RSNADataset(Dataset):
         patient_id = self.df.loc[index, "patient_id"]
         laterality = self.df.loc[index, "laterality"]
 
-        image_1 = self.read_image(image_id_view_1)
-        image_2 = self.read_image(image_id_view_2)
+        idx_view_1 = self.idx_dict[image_id_view_1]
+        idx_view_2 = self.idx_dict[image_id_view_2]
+        image_1 = self.read_image(idx_view_1)
+        image_2 = self.read_image(idx_view_2)
 
         if self.phase == "train":
             x_min, y_min, x_max, y_max = self.get_bbox_aug(image_1)
