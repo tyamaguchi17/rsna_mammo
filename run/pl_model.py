@@ -43,7 +43,10 @@ def pf_score(labels, predictions, percentile=0, bin=False):
 
     beta_squared = beta * beta
     c_precision = ctp / (ctp + cfp)
-    c_recall = ctp / y_true_count
+    if y_true_count:
+        c_recall = ctp / y_true_count
+    else:
+        c_recall = 0
     if c_precision > 0 and c_recall > 0:
         result = (
             (1 + beta_squared)
@@ -177,7 +180,7 @@ class PLModel(LightningModule):
         df["pred_site_id"] = (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
         df = (
             df.drop_duplicates()
-            .groupby(by=["original_index", "laterality"])
+            .groupby(by=["original_index"])
             .mean()
             .reset_index()
             .sort_values(by="original_index")
