@@ -139,6 +139,11 @@ class PLModel(LightningModule):
             "laterality",
             "label",
             "pred",
+            "pred_biopsy",
+            "pred_invasive",
+            "pred_age",
+            "pred_machine_id",
+            "pred_site_id",
             "embed_features",
         ]:
             if key == "embed_features":
