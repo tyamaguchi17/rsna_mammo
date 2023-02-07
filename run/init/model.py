@@ -6,7 +6,7 @@ from omegaconf import DictConfig
 
 from src.nn.backbone import load_backbone
 from src.nn.backbones.base import BackboneBase
-from src.nn.heads.arc_face import ChannelWiseGeM, GeM
+from src.nn.pool.pool import ChannelWiseGeM, GeM
 from src.utils.checkpoint import get_weights_to_load
 
 logger = getLogger(__name__)
