@@ -335,7 +335,7 @@ class RSNADataset(Dataset):
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
             "patient_id": patient_id,
-            "laterality": {"L":0, "R":0}[laterality] ,
+            "laterality": {"L":0, "R":1}[laterality] ,
             "label": label,
             "image_1": image_1,
             "image_2": image_2,
