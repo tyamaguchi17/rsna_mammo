@@ -196,7 +196,7 @@ class RSNADataset(Dataset):
         if self._cache:
             image = self._cache.get_and_cache(image_id, self._read_image)
         else:
-            image = self.read_data(image_id)
+            image = self._read_image(image_id)
         return image
 
     def augmentation_2(self, image_1, image_2):
