@@ -162,7 +162,7 @@ class PLModel(LightningModule):
             }
         )
         df["pred"] = sigmoid(epoch_results["pred"][:, 0].reshape(-1))
-        df["label"] = epoch_results["label"][:, 0].reshape(-1)
+        df["label"] = epoch_results["label"]
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
         df["pred_age"] = epoch_results["pred_invasive"].argmax(axis=1).reshape(-1) * 3
