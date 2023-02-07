@@ -7,8 +7,8 @@ services:
     shm_size: '32gb'
     container_name: mammo
     volumes:
-     - ../../:/tmp/working
-    working_dir: /tmp/working
+     - ../../:/home/working
+    working_dir: /home/working
     ports:
      - 8888:8888
     command: jupyter lab --ip=0.0.0.0 --port 8888 --allow-root --NotebookApp.notebook_dir='/tmp/working' --no-browser --NotebookApp.token='mammo'
