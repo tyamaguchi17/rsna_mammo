@@ -56,7 +56,7 @@ class RSNADataset(Dataset):
             if fold_path is not None:
                 df = pd.read_csv(fold_path)
                 if num_records:
-                    df = df[::num_records]
+                    df = df[:num_records]
                 return df
             else:
                 df = pd.read_csv(str(root / "train.csv"))
@@ -335,7 +335,7 @@ class RSNADataset(Dataset):
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
             "patient_id": patient_id,
-            "laterality": laterality,
+            "laterality": {"L":0, "R":0}[laterality] ,
             "label": label,
             "image_1": image_1,
             "image_2": image_2,
