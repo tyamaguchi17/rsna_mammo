@@ -168,23 +168,21 @@ class PLModel(LightningModule):
                 "original_index": epoch_results["original_index"]
                 .reshape(-1)
                 .astype(int),
-                "image_id": epoch_results["image_id"].reshape(-1).astype(int),
-                "image_id_2": epoch_results["image_id_2"].reshape(-1).astype(int),
-                "patient_id": epoch_results["patient_id"].reshape(-1).astype(int),
-                "laterality": epoch_results["laterality"].reshape(-1).astype(int),
+                "image_id": epoch_results["image_id"].reshape(-1),
+                "image_id_2": epoch_results["image_id_2"].reshape(-1),
+                "patient_id": epoch_results["patient_id"].reshape(-1),
+                "laterality": epoch_results["laterality"].reshape(-1),
             }
         )
         df["pred"] = sigmoid(epoch_results["pred"][:, 0].reshape(-1))
-        df["label"] = epoch_results["label"].astype(int)
+        df["label"] = epoch_results["label"]
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
         df["pred_age"] = epoch_results["pred_invasive"].argmax(axis=1).reshape(-1) * 3
         df["pred_machine_id"] = (
             epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
-        ).astype(int)
-        df["pred_site_id"] = (
-            (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
-        ).astype(int)
+        )
+        df["pred_site_id"] = (epoch_results["pred_site_id"][:, 0] > 0).reshape(-1) + 1
         df = (
             df.drop_duplicates()
             .groupby(by=["original_index"])
