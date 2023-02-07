@@ -7,7 +7,7 @@ services:
     shm_size: '32gb'
     container_name: mammo
     volumes:
-     - ./:/tmp/working
+     - ../../:/tmp/working
     working_dir: /tmp/working
     ports:
      - 8888:8888
