@@ -92,15 +92,15 @@ class Forwarder(nn.Module):
         if phase == "train":
             with torch.set_grad_enabled(True):
                 embed_features = self.model.forward_features(inputs)
-                logits = self.model.head(embed_features)
-                logits_biopsy = self.model.head_biopsy(embed_features)
-                logits_invasive = self.model.head_invasive(embed_features)
-                logits_age = self.model.head_age(embed_features)
-                logits_machine_id = self.model.head_machine_id(embed_features)
-                logits_site_id = self.model.head_site_id(embed_features)
-                # logits_2 = self.model.head_2(embed_features)
-                # logits_biopsy_2 = self.model.head_biopsy_2(embed_features)
-                # logits_invasive_2 = self.model.head_invasive_2(embed_features)
+                logits = self.model.head.head(embed_features)
+                logits_biopsy = self.model.head.head_biopsy(embed_features)
+                logits_invasive = self.model.head.head_invasive(embed_features)
+                logits_age = self.model.head.head_age(embed_features)
+                logits_machine_id = self.model.head.head_machine_id(embed_features)
+                logits_site_id = self.model.head.head_site_id(embed_features)
+                # logits_2 = self.model.head.head_2(embed_features)
+                # logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
+                # logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
             loss = self.loss(
                 logits=logits,
                 logits_biopsy=logits_biopsy,
@@ -117,12 +117,15 @@ class Forwarder(nn.Module):
             )
         else:
             embed_features = self.model.forward_features(inputs)
-            logits = self.model.head(embed_features)
-            logits_biopsy = self.model.head_biopsy(embed_features)
-            logits_invasive = self.model.head_invasive(embed_features)
-            logits_age = self.model.head_age(embed_features)
-            logits_machine_id = self.model.head_machine_id(embed_features)
-            logits_site_id = self.model.head_site_id(embed_features)
+            logits = self.model.head.head(embed_features)
+            logits_biopsy = self.model.head.head_biopsy(embed_features)
+            logits_invasive = self.model.head.head_invasive(embed_features)
+            logits_age = self.model.head.head_age(embed_features)
+            logits_machine_id = self.model.head.head_machine_id(embed_features)
+            logits_site_id = self.model.head.head_site_id(embed_features)
+            # logits_2 = self.model.head.head_2(embed_features)
+            # logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
+            # logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
 
             loss = self.loss(
                 logits=logits,

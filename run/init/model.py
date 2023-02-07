@@ -57,15 +57,18 @@ def init_model_from_config(cfg: DictConfig, pretrained: bool):
         # head_invasive_2 = nn.Linear(backbone.out_features, 1, bias=True)
     else:
         raise ValueError(f"{cfg.head.type} is not implemented")
-    model.add_module("head", head)
-    model.add_module("head_biopsy", head_biopsy)
-    model.add_module("head_invasive", head_invasive)
-    model.add_module("head_age", head_age)
-    model.add_module("head_machine_id", head_machine_id)
-    model.add_module("head_site_id", head_site_id)
-    # model.add_module("head_2", head_2)
-    # model.add_module("head_biopsy_2", head_biopsy_2)
-    # model.add_module("head_invasive_2", head_invasive_2)
+
+    head_all = nn.Sequential()
+    head_all.add_module("head", head)
+    head_all.add_module("head_biopsy", head_biopsy)
+    head_all.add_module("head_invasive", head_invasive)
+    head_all.add_module("head_age", head_age)
+    head_all.add_module("head_machine_id", head_machine_id)
+    head_all.add_module("head_site_id", head_site_id)
+    # head_all.add_module("head_2", head_2)
+    # head_all.add_module("head_biopsy_2", head_biopsy_2)
+    # head_all.add_module("head_invasive_2", head_invasive_2)
+    model.add_module("head", head_all)
 
     if cfg.restore_path is not None:
         logger.info(f'Loading weights from "{cfg.restore_path}"...')
