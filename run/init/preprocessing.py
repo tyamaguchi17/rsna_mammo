@@ -129,7 +129,7 @@ class Preprocessing:
                 # Targets: image, mask, bboxes, keypoints
                 A.Resize(self.h_resize_to, self.w_resize_to, p=1),
                 # Targets: image
-                # A.Normalize(mean=self.mean, std=self.std),
+                A.Normalize(mean=self.mean, std=self.std),
                 # Targets: image, mask
                 ToTensorV2(transpose_mask=True),
             ]
