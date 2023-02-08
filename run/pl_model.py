@@ -28,6 +28,7 @@ def pf_score(labels, predictions, percentile=0, bin=False):
     ctp = 0
     cfp = 0
 
+    predictions = predictions.copy()
     th = np.percentile(predictions, percentile)
     predictions[np.where(predictions < th)] = 0
     if bin:

@@ -112,8 +112,8 @@ training:
   debug: false  # If true, run in a debug mode
   use_wandb: false # If true, WandbLogger will be used
   seed: 0  # Random seed passed for seed_everything
-  monitor: val/loss
-  monitor_mode: min
+  monitor: val/auc
+  monitor_mode: max
   gradient_clip_val: 0.5
   accumulate_grad_batches: 1
   save_embed: false
