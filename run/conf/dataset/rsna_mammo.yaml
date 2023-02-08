@@ -18,8 +18,8 @@ augmentation:
   p_crop_resize: 0.75
   bbox_size_scale_min: 0.75
   bbox_size_scale_max: 1.25
-  p_shuffle_view: 0.1
-  p_dup_view_1: 0.1
-  p_dup_view_2: 0.1
-  p_mask_view_1 : 0.1
-  p_mask_view_2: 0.1
+  p_shuffle_view: 0.0
+  p_dup_view_1: 0.0
+  p_dup_view_2: 0.0
+  p_mask_view_1 : 0.0
+  p_mask_view_2: 0.0

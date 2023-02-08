@@ -32,7 +32,25 @@ class Preprocessing:
 
         cfg = self.aug_cfg
 
-        if cfg.use_aug:
+        if cfg.use_light_aug:
+            transforms = [
+                A.Resize(self.h_resize_to, self.w_resize_to),
+                A.ShiftScaleRotate(rotate_limit=30),
+                A.VerticalFlip(p=0.5),
+                A.HorizontalFlip(p=0.5),
+                A.RandomBrightnessContrast(0.1, 0.1, p=0.5),
+                A.OneOf(
+                    [
+                        A.GridDistortion(),
+                        A.OpticalDistortion(),
+                    ],
+                    p=0.1,
+                ),
+                A.Normalize(mean=self.mean, std=self.std),
+                A.CoarseDropout(max_holes=16, max_height=64, max_width=64, p=0.2),
+                ToTensorV2(transpose_mask=True),
+            ]
+        elif cfg.use_aug:
             transforms = [
                 A.Resize(self.h_resize_to, self.w_resize_to),
                 A.ShiftScaleRotate(
