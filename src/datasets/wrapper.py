@@ -21,13 +21,15 @@ class WrapperDataset(Dataset):
     def apply_transform(self, data):
 
         image_1 = data.pop("image_1")
-        image_2 = data.pop("image_2")
+        if self.base.use_multi:
+            image_2 = data.pop("image_2")
 
         transformed = self.transform(image=image_1)
         image_1 = transformed["image"]  # (1, H, W)
-        transformed = self.transform(image=image_2)
-        image_2 = transformed["image"]  # (1, H, W)
-        data["image"] = np.concatenate([image_1, image_2])  # (2, H, W)
+        if self.base.use_multi:
+            transformed = self.transform(image=image_2)
+            image_2 = transformed["image"]  # (1, H, W)
+            data["image"] = np.concatenate([image_1, image_2])  # (2, H, W)
 
         return data
 
