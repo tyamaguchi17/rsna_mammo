@@ -341,6 +341,7 @@ class RSNADataset(Dataset):
         res = {
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
+            "image_id_2": image_id_view_2,
             "patient_id": patient_id,
             "laterality": {"L": 0, "R": 1}[laterality],
             "label": label,
@@ -349,7 +350,6 @@ class RSNADataset(Dataset):
         if self.use_multi:
             res.update(
                 {
-                    "image_id_2": image_id_view_2,
                     "image_2": image_2,
                 }
             )
