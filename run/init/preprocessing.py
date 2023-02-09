@@ -35,16 +35,19 @@ class Preprocessing:
         if cfg.use_light_aug:
             transforms = [
                 A.Resize(self.h_resize_to, self.w_resize_to),
-                A.ShiftScaleRotate(rotate_limit=30),
+                A.ShiftScaleRotate(0.1, 0.2, 15),
                 A.VerticalFlip(p=0.5),
                 A.HorizontalFlip(p=0.5),
-                A.RandomBrightnessContrast(0.1, 0.1, p=0.5),
+                A.RandomBrightnessContrast(0.3, 0.3, p=0.5),
                 A.OneOf(
                     [
+                        A.ElasticTransform(
+                            alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03
+                        ),
                         A.GridDistortion(),
-                        A.OpticalDistortion(),
+                        A.OpticalDistortion(distort_limit=2, shift_limit=0.5),
                     ],
-                    p=0.1,
+                    p=0.25,
                 ),
                 A.Normalize(mean=self.mean, std=self.std),
                 A.CoarseDropout(max_holes=16, max_height=64, max_width=64, p=0.2),
