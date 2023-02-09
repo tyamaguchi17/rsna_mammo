@@ -30,6 +30,8 @@ class WrapperDataset(Dataset):
             transformed = self.transform(image=image_2)
             image_2 = transformed["image"]  # (1, H, W)
             data["image"] = np.concatenate([image_1, image_2])  # (2, H, W)
+        else:
+            data["image"] = image_1
 
         return data
 
