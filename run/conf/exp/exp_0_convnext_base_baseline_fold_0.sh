@@ -1,3 +1,4 @@
+FOLD=0
 python -m run.train \
   dataset.num_folds=4 \
   dataset.test_fold=$FOLD \
