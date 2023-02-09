@@ -41,9 +41,9 @@ class Preprocessing:
                 A.RandomBrightnessContrast(0.3, 0.3, p=0.5),
                 A.OneOf(
                     [
-#                        A.ElasticTransform(
-#                            alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03
-#                        ),
+                        #                        A.ElasticTransform(
+                        #                            alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03
+                        #                        ),
                         A.GridDistortion(),
                         A.OpticalDistortion(distort_limit=2, shift_limit=0.5),
                     ],
@@ -56,12 +56,7 @@ class Preprocessing:
         elif cfg.use_aug:
             transforms = [
                 A.Resize(self.h_resize_to, self.w_resize_to),
-                A.ShiftScaleRotate(
-                    shift_limit_x=[-0.125, 0.125],
-                    shift_limit_y=[-0.10, 0.10],
-                    rotate_limit=15,
-                    p=0.3,
-                ),
+                A.ShiftScaleRotate(0.1, 0.2, 15),
                 A.Affine(
                     rotate=(-cfg.rotate, cfg.rotate),
                     translate_percent=(0.0, cfg.translate),
@@ -80,10 +75,19 @@ class Preprocessing:
                 A.Downscale(scale_min=0.5, scale_max=0.5, p=cfg.p_downscale),
                 A.RandomGridShuffle(grid=(2, 2), p=cfg.p_shuffle),
                 A.Posterize(p=cfg.p_posterize),
+                A.OneOf(
+                    [
+                        A.GridDistortion(),
+                        A.OpticalDistortion(distort_limit=2, shift_limit=0.5),
+                    ],
+                    p=0.25,
+                ),
                 A.RandomBrightnessContrast(p=cfg.p_bright_contrast),
                 A.Cutout(p=cfg.p_cutout),
                 A.HorizontalFlip(p=0.5),
+                A.VerticalFlip(p=0.5),
                 A.Normalize(mean=self.mean, std=self.std),
+                A.CoarseDropout(max_holes=16, max_height=64, max_width=64, p=0.2),
                 ToTensorV2(transpose_mask=True),
             ]
         elif cfg.use_heavy_aug:
