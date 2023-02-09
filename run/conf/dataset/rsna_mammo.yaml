@@ -11,6 +11,7 @@ phase: "train"
 use_cache: false
 roi_th: 0.1
 roi_buffer: 30
+use_multi: false
 augmentation:
   p_th: 0.5
   roi_th_min: 0.08

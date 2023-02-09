@@ -110,6 +110,7 @@ class RSNADataset(Dataset):
         self.cfg_aug = cfg.augmentation
         self.roi_th = cfg.roi_th
         self.roi_buffer = cfg.roi_buffer
+        self.use_multi = cfg.use_multi
 
         if cfg.use_cache:
             cache_dir = "/tmp/rsna/"
@@ -318,32 +319,40 @@ class RSNADataset(Dataset):
         idx_view_1 = self.idx_dict[image_id_view_1]
         idx_view_2 = self.idx_dict[image_id_view_2]
         image_1 = self.read_image(idx_view_1)
-        image_2 = self.read_image(idx_view_2)
+        if self.use_multi:
+            image_2 = self.read_image(idx_view_2)
 
         if self.phase == "train":
             x_min, y_min, x_max, y_max = self.get_bbox_aug(image_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
-            x_min, y_min, x_max, y_max = self.get_bbox_aug(image_2)
-            image_2 = image_2[y_min:y_max, x_min:x_max]
-            image_1, image_2 = self.augmentation([image_1, image_2])
+            if self.use_multi:
+                x_min, y_min, x_max, y_max = self.get_bbox_aug(image_2)
+                image_2 = image_2[y_min:y_max, x_min:x_max]
+                image_1, image_2 = self.augmentation([image_1, image_2])
         else:
             x_min, y_min, x_max, y_max = self.get_bbox(image_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
-            x_min, y_min, x_max, y_max = self.get_bbox(image_2)
-            image_2 = image_2[y_min:y_max, x_min:x_max]
+            if self.use_multi:
+                x_min, y_min, x_max, y_max = self.get_bbox(image_2)
+                image_2 = image_2[y_min:y_max, x_min:x_max]
 
         meta_data = self.get_meta_data(index)
 
         res = {
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
-            "image_id_2": image_id_view_2,
             "patient_id": patient_id,
             "laterality": {"L": 0, "R": 1}[laterality],
             "label": label,
             "image_1": image_1,
-            "image_2": image_2,
         }
+        if self.use_multi:
+            res.update(
+                {
+                    "image_id_2": image_id_view_2,
+                    "image_2": image_2,
+                }
+            )
         res.update(meta_data)
         # res["label_2"] = res["label"]
         # res["biopsy_2"] = res["biopsy"]
