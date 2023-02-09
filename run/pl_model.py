@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
 from torch.utils.data import DataLoader
 
@@ -220,26 +220,46 @@ class PLModel(LightningModule):
                 test_results_filepath / f"epoch_{self.current_epoch}_results.csv",
                 index=False,
             )
+            weights_filepath = Path(self.cfg.out_dir) / "weights"
+            if not weights_filepath.exists():
+                weights_filepath.mkdir(exist_ok=True)
+            weights_path = str(
+                weights_filepath / f"model_weights_epoch_{self.current_epoch}.pth"
+            )
+            logger.info(f"Extracting and saving weights: {weights_path}")
+            torch.save(self.forwarder.model.state_dict(), weights_path)
 
         pred = df["pred"].values
         label = df["label"].values
         pf_score_000 = pf_score(label, pred)
-        pf_score_985 = pf_score(label, pred, percentile=98.5)
-        pf_score_983 = pf_score(label, pred, percentile=98.3)
-        pf_score_980 = pf_score(label, pred, percentile=98.0)
+        f1_score_980 = pf_score(label, pred, percentile=98.0, bin=True)
+        f1_score_981 = pf_score(label, pred, percentile=98.1, bin=True)
+        f1_score_982 = pf_score(label, pred, percentile=98.2, bin=True)
         f1_score_983 = pf_score(label, pred, percentile=98.3, bin=True)
+        f1_score_984 = pf_score(label, pred, percentile=98.4, bin=True)
+        max_f1_score = max(
+            f1_score_980, f1_score_981, f1_score_982, f1_score_983, f1_score_984
+        )
         try:
             auc_score = roc_auc_score(label.reshape(-1), pred.reshape(-1))
+        except Exception:
+            auc_score = 0
+
+        try:
+            pr_auc_score = average_precision_score(label.reshape(-1), pred.reshape(-1))
         except Exception:
             auc_score = 0
 
         # Log items
         self.log(f"{phase}/loss", mean_loss, prog_bar=True)
         self.log(f"{phase}/pf_score", pf_score_000, prog_bar=True)
-        self.log(f"{phase}/pf_score_985", pf_score_985, prog_bar=False)
-        self.log(f"{phase}/pf_score_983", pf_score_983, prog_bar=True)
-        self.log(f"{phase}/pf_score_980", pf_score_980, prog_bar=False)
+        self.log(f"{phase}/f1_score_980", f1_score_980, prog_bar=False)
+        self.log(f"{phase}/f1_score_981", f1_score_981, prog_bar=True)
+        self.log(f"{phase}/f1_score_982", f1_score_982, prog_bar=False)
         self.log(f"{phase}/f1_score_983", f1_score_983, prog_bar=True)
+        self.log(f"{phase}/f1_score_984", f1_score_984, prog_bar=False)
+        self.log(f"{phase}/f1_score", max_f1_score, prog_bar=True)
+        self.log(f"{phase}/pr_auc", pr_auc_score, prog_bar=True)
         self.log(f"{phase}/auc", auc_score, prog_bar=True)
 
     def _evaluation_step(self, batch: Dict[str, Tensor], phase: Literal["val", "test"]):
