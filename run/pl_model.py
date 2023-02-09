@@ -226,7 +226,7 @@ class PLModel(LightningModule):
             weights_path = str(
                 weights_filepath / f"model_weights_epoch_{self.current_epoch}.pth"
             )
-            logger.info(f"Extracting and saving weights: {weights_path}")
+            # logger.info(f"Extracting and saving weights: {weights_path}")
             torch.save(self.forwarder.model.state_dict(), weights_path)
 
         pred = df["pred"].values
