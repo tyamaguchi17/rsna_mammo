@@ -17,7 +17,6 @@ META_DATA_LIST = [
     "biopsy",
     "invasive",
     "age",
-    "age_scaled",
     "site_id",
     "machine_id",
     "machine_id_enc",
