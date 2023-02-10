@@ -203,6 +203,9 @@ class PLModel(LightningModule):
                 **epoch_results,
             )
             df.to_csv(test_results_filepath / "test_results.csv", index=False)
+            df = df[["patient_id", "laterality", "label", "pred"]]
+            df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
+            df.to_csv(test_results_filepath / "test_results_view.csv", index=False)
 
         loss = (
             torch.cat([torch.atleast_1d(x["loss"]) for x in outputs])
@@ -212,12 +215,16 @@ class PLModel(LightningModule):
         )
         mean_loss = np.mean(loss)
 
-        df = df[["patient_id", "laterality", "label", "pred"]]
-        df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
         if phase != "test" and self.trainer.global_rank == 0:
             test_results_filepath = Path(self.cfg.out_dir) / "test_results"
             if not test_results_filepath.exists():
                 test_results_filepath.mkdir(exist_ok=True)
+            df.to_csv(
+                test_results_filepath / f"epoch_{self.current_epoch}_results_view.csv",
+                index=False,
+            )
+            df = df[["patient_id", "laterality", "label", "pred"]]
+            df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
             df.to_csv(
                 test_results_filepath / f"epoch_{self.current_epoch}_results.csv",
                 index=False,
@@ -252,6 +259,8 @@ class PLModel(LightningModule):
         except Exception:
             auc_score = 0
 
+        mean_auc_score = (auc_score + pr_auc_score) / 2
+
         # Log items
         self.log(f"{phase}/loss", mean_loss, prog_bar=True)
         self.log(f"{phase}/pf_score", pf_score_000, prog_bar=False)
@@ -263,6 +272,7 @@ class PLModel(LightningModule):
         self.log(f"{phase}/f1_score", max_f1_score, prog_bar=True)
         self.log(f"{phase}/pr_auc", pr_auc_score, prog_bar=True)
         self.log(f"{phase}/auc", auc_score, prog_bar=True)
+        self.log(f"{phase}/mean_auc", mean_auc_score, prog_bar=True)
 
     def _evaluation_step(self, batch: Dict[str, Tensor], phase: Literal["val", "test"]):
         (

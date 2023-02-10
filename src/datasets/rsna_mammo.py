@@ -44,11 +44,12 @@ class RSNADataset(Dataset):
     @classmethod
     def create_dataframe(
         cls,
-        num_folds: int,
+        num_folds: int = 4,
         seed: int = 2023,
         num_records: int = 0,
         fold_path: Optional[str] = "./fold/train_with_fold.csv",
         data_type: str = "train",
+        pl_path: Optional[str] = None,
     ) -> pd.DataFrame:
         root = cls.ROOT_PATH
 
@@ -60,6 +61,18 @@ class RSNADataset(Dataset):
                 return df
             else:
                 df = pd.read_csv(str(root / "train.csv"))
+        elif data_type == "vindr":
+            if pl_path is not None:
+                df = pd.read_csv(str(root / "vindr_train.csv"))
+                df["cancer"] = 0
+            else:
+                df = pd.read_csv(pl_path)
+            df["biopsy"] = 0
+            df["invasive"] = 0
+            df["site_id"] = 0
+            df["machine_id"] = -1
+            return df
+
         elif data_type == "test":
             df = pd.read_csv(str(root / "sample_submission.csv"))
             return df
