@@ -62,8 +62,8 @@ class RSNADataset(Dataset):
             else:
                 df = pd.read_csv(str(root / "train.csv"))
         elif data_type == "vindr":
-            if pl_path is not None:
-                df = pd.read_csv(str(root / "vindr_train.csv"))
+            if pl_path is None:
+                df = pd.read_csv("./vindr/vindr_train.csv")
                 df["cancer"] = 0
             else:
                 df = pd.read_csv(pl_path)
