@@ -209,7 +209,7 @@ class PLModel(LightningModule):
                 df.to_csv(test_results_filepath / "test_results_view.csv", index=False)
             else:
                 if self.datasets[phase].base.data_name == "vindr":
-                    df_vindr = pd.read_csv("./data/vindr/vindr_train.csv")
+                    df_vindr = pd.read_csv("./vindr/vindr_train.csv")
                     df_vindr["cancer"] = df["pred"]
                     df_vindr.to_csv(test_results_filepath / "vinder_pl.csv", index=False)
 
