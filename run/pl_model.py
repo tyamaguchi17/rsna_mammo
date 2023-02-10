@@ -179,7 +179,9 @@ class PLModel(LightningModule):
         df["label"] = epoch_results["label"]
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
-        df["pred_age"] = epoch_results["pred_invasive"].argmax(axis=1).reshape(-1) * 3
+        df["pred_age"] = (
+            sigmoid(epoch_results["pred_age"].argmax(axis=1).reshape(-1)) * 90
+        )
         df["pred_machine_id"] = (
             epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
         )
@@ -252,11 +254,11 @@ class PLModel(LightningModule):
 
         # Log items
         self.log(f"{phase}/loss", mean_loss, prog_bar=True)
-        self.log(f"{phase}/pf_score", pf_score_000, prog_bar=True)
+        self.log(f"{phase}/pf_score", pf_score_000, prog_bar=False)
         self.log(f"{phase}/f1_score_980", f1_score_980, prog_bar=False)
-        self.log(f"{phase}/f1_score_981", f1_score_981, prog_bar=True)
+        self.log(f"{phase}/f1_score_981", f1_score_981, prog_bar=False)
         self.log(f"{phase}/f1_score_982", f1_score_982, prog_bar=False)
-        self.log(f"{phase}/f1_score_983", f1_score_983, prog_bar=True)
+        self.log(f"{phase}/f1_score_983", f1_score_983, prog_bar=False)
         self.log(f"{phase}/f1_score_984", f1_score_984, prog_bar=False)
         self.log(f"{phase}/f1_score", max_f1_score, prog_bar=True)
         self.log(f"{phase}/pr_auc", pr_auc_score, prog_bar=True)

@@ -62,7 +62,7 @@ class Forwarder(nn.Module):
         loss = self.loss_bce(logits, labels) * cfg.cancer_weight
         loss += self.loss_bce(logits_biopsy, labels_biospy) * cfg.biopsy_weight
         loss += self.loss_bce(logits_invasive, labels_invasive) * cfg.invasive_weight
-        loss += self.loss_ce(logits_age, labels_age) * cfg.age_weight
+        loss += self.loss_bce(logits_age, labels_age) * cfg.age_weight
         loss += (
             self.loss_ce(logits_machine_id, labels_machine_id) * cfg.machine_id_weight
         )
@@ -80,7 +80,7 @@ class Forwarder(nn.Module):
         labels = batch["label"].to(torch.float16)
         labels_biospy = batch["biopsy"].to(torch.float16)
         labels_invasive = batch["invasive"].to(torch.float16)
-        labels_age = batch["age_3"]
+        labels_age = batch["age_scaled"]
         labels_machine_id = batch["machine_id_enc"]
         labels_site_id = (batch["site_id"] - 1).to(torch.float16)
 

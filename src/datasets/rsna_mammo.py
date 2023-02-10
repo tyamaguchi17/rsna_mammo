@@ -17,6 +17,7 @@ META_DATA_LIST = [
     "biopsy",
     "invasive",
     "age",
+    "age_scaled",
     "site_id",
     "machine_id",
     "machine_id_enc",
@@ -97,6 +98,7 @@ class RSNADataset(Dataset):
         lat_diff, view_diff = self.get_pair_image_ids_columns(self.df)
         self.df["lat_diff_image_ids"] = lat_diff
         self.df["view_diff_image_ids"] = view_diff
+        self.df["age"] = self.df["age"].fillna(60)
         self.df = self.df.fillna(0)
 
         self.data_name = "rsna"
@@ -181,9 +183,7 @@ class RSNADataset(Dataset):
         data = self.df.iloc[idx]
         for meta in META_DATA_LIST:
             res[meta] = int(data[meta])
-        res["age_3"] = data[meta] // 3
-        res["age_5"] = data[meta] // 5
-        res["age_10"] = data[meta] // 10
+        res["age_scaled"] = np.float16(data[meta] / 90)
         return res
 
     def _read_image(self, index):
