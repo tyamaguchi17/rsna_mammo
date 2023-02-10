@@ -80,7 +80,7 @@ class Forwarder(nn.Module):
         labels = batch["label"].to(torch.float16)
         labels_biospy = batch["biopsy"].to(torch.float16)
         labels_invasive = batch["invasive"].to(torch.float16)
-        labels_age = batch["age_scaled"]
+        labels_age = batch["age_scaled"].to(torch.float16)
         labels_machine_id = batch["machine_id_enc"]
         labels_site_id = (batch["site_id"] - 1).to(torch.float16)
 

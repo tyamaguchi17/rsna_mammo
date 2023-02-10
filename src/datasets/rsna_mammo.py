@@ -182,7 +182,7 @@ class RSNADataset(Dataset):
         data = self.df.iloc[idx]
         for meta in META_DATA_LIST:
             res[meta] = int(data[meta])
-        res["age_scaled"] = np.float16(data[meta] / 90)
+        res["age_scaled"] = data["age"] / 90
         return res
 
     def _read_image(self, index):
