@@ -113,8 +113,8 @@ class RSNADataset(Dataset):
         self.df["age"] = self.df["age"].fillna(60)
         self.df = self.df.fillna(0)
 
-        self.data_name = "rsna"
-        if data_name == "rsna":
+        self.data_name = data_name
+        if data_name == "rsna" or data_name == "vindr":
             self.df["machine_id_enc"] = self.df["machine_id"].map(MACHINE_ID_ENCODER)
             self.patient_dict = self.get_image_patient_map(self.df)
             self.idx_dict = self.get_image_idx_map(self.df)
@@ -201,7 +201,7 @@ class RSNADataset(Dataset):
     def _read_image(self, index):
         root = self.ROOT_PATH
         image_id = self.df.at[index, "image_id"]
-        if self.data_name == "rsna":
+        if self.data_name == "rsna" or self.data_name == "vindr":
             patient_id = self.patient_dict[image_id]
             path = root / f"{patient_id}/{image_id}.png"
             image = cv2.imread(str(path))

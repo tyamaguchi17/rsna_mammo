@@ -57,9 +57,9 @@ def get_rsna_dataset(
         test_dataset = RSNADataset(test_df, phase="test", cfg=cfg)
     elif phase == "vindr":
         df_vindr = RSNADataset.create_dataframe(data_type="vindr")
-        train_dataset = RSNADataset(df_vindr, phase="test", cfg=cfg)
-        val_dataset = RSNADataset(df_vindr, phase="test", cfg=cfg)
-        test_dataset = RSNADataset(df_vindr, phase="test", cfg=cfg)
+        train_dataset = RSNADataset(df_vindr, phase="test", cfg=cfg, data_name="vindr")
+        val_dataset = RSNADataset(df_vindr, phase="test", cfg=cfg, data_name="vindr")
+        test_dataset = RSNADataset(df_vindr, phase="test", cfg=cfg, data_name="vindr")
 
     datasets = {"train": train_dataset, "val": val_dataset, "test": test_dataset}
     return datasets
