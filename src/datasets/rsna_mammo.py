@@ -251,7 +251,7 @@ class RSNADataset(Dataset):
             image_id_view_2 = random.choice(self.df.at[index, "view_diff_image_ids"])
         else:
             image_id_view_2 = self.df.at[index, "view_diff_image_ids"][0]
-        image_id_view_2 = np.int64(image_id_view_2)
+        image_id_view_2 = image_id_view_2
         return image_id_view_1, image_id_view_2
 
     def get_different_lat_ids(self, index):
