@@ -154,7 +154,7 @@ class RSNADataset(Dataset):
         self.cfg_aug = cfg.augmentation
         self.roi_th = cfg.roi_th
         self.roi_buffer = cfg.roi_buffer
-        self.use_multi = cfg.use_multi
+        self.use_multi_view = cfg.use_multi_view
         self.use_yolo = cfg.use_yolo
 
         if cfg.use_cache:
@@ -375,20 +375,20 @@ class RSNADataset(Dataset):
         idx_view_1 = self.idx_dict[image_id_view_1]
         idx_view_2 = self.idx_dict[image_id_view_2]
         image_1 = self.read_image(idx_view_1)
-        if self.use_multi:
+        if self.use_multi_view:
             image_2 = self.read_image(idx_view_2)
 
         if self.phase == "train":
             x_min, y_min, x_max, y_max = self.get_bbox_aug(image_1, idx_view_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
-            if self.use_multi:
+            if self.use_multi_view:
                 x_min, y_min, x_max, y_max = self.get_bbox_aug(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
                 image_1, image_2 = self.augmentation([image_1, image_2])
         else:
             x_min, y_min, x_max, y_max = self.get_bbox(image_1, idx_view_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
-            if self.use_multi:
+            if self.use_multi_view:
                 x_min, y_min, x_max, y_max = self.get_bbox(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
 
@@ -403,7 +403,7 @@ class RSNADataset(Dataset):
             "label": label,
             "image_1": image_1,
         }
-        if self.use_multi:
+        if self.use_multi_view:
             res.update(
                 {
                     "image_2": image_2,

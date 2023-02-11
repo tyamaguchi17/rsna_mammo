@@ -40,6 +40,7 @@ model:
 
   head: ${head}
   output_dim: ${dataset.num_classes}
+  use_multi_view: ${dataset.use_multi_view}
   pool: ${pool}
   use_bn: false
   in_chans: 1
@@ -63,6 +64,7 @@ head:
 # Forwarder
 #====
 forwarder:
+  use_multi_view: ${dataset.use_multi_view}
   loss:
     cancer_weight: 1.0
     biopsy_weight: 0.0

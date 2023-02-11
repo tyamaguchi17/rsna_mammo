@@ -86,14 +86,20 @@ class PLModel(LightningModule):
         for phase in ["train", "val", "test"]:
             if phase == "train":
                 train_dataset = WrapperDataset(
-                    raw_datasets["train"], transforms["train"], "train"
+                    raw_datasets["train"],
+                    transforms["train"],
+                    "train",
+                    view=cfg.dataset.view,
                 )
                 pos_cnt = train_dataset.base.df["cancer"].sum() * (
                     cfg.dataset.positive_aug_num + 1
                 )
                 if cfg.dataset.positive_aug_num > 0:
                     train_positive_dataset = WrapperDataset(
-                        raw_datasets["train_positive"], transforms["train"], "train"
+                        raw_datasets["train_positive"],
+                        transforms["train"],
+                        "train",
+                        view=cfg.dataset.view,
                     )
                     train_dataset = [train_dataset] + [
                         train_positive_dataset
@@ -148,16 +154,16 @@ class PLModel(LightningModule):
             sync_dist=True,
             batch_size=1,
         )
-        self.log(
-            "lr_head",
-            sch.get_last_lr()[1],
-            on_step=True,
-            on_epoch=False,
-            prog_bar=True,
-            logger=True,
-            sync_dist=True,
-            batch_size=1,
-        )
+        # self.log(
+        #     "lr_head",
+        #     sch.get_last_lr()[1],
+        #     on_step=True,
+        #     on_epoch=False,
+        #     prog_bar=True,
+        #     logger=True,
+        #     sync_dist=True,
+        #     batch_size=1,
+        # )
 
         return loss
 

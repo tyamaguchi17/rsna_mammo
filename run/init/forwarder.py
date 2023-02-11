@@ -80,8 +80,14 @@ class Forwarder(nn.Module):
         if self.ema is None:
             self.ema = ExponentialMovingAverage(self.model.parameters(), decay=0.999)
 
+        use_multi_view = self.cfg.use_multi_view
+
         # inputs: Input tensor.
         inputs = batch["image"]
+
+        if use_multi_view:
+            bs, ch, h, w = inputs.shape
+            inputs = inputs.view(bs * ch, h, w)
 
         # labels
         labels = batch["label"].to(torch.float16)
@@ -99,6 +105,8 @@ class Forwarder(nn.Module):
         if phase == "train":
             with torch.set_grad_enabled(True):
                 embed_features = self.model.forward_features(inputs)
+                if use_multi_view:
+                    embed_features = embed_features.view(bs, -1)
                 logits = self.model.head.head(embed_features)
                 logits_biopsy = self.model.head.head_biopsy(embed_features)
                 logits_invasive = self.model.head.head_invasive(embed_features)
@@ -125,6 +133,8 @@ class Forwarder(nn.Module):
         else:
             with self.ema.average_parameters():
                 embed_features = self.model.forward_features(inputs)
+                if use_multi_view:
+                    embed_features = embed_features.view(bs, -1)
                 logits = self.model.head.head(embed_features)
                 logits_biopsy = self.model.head.head_biopsy(embed_features)
                 logits_invasive = self.model.head.head_invasive(embed_features)

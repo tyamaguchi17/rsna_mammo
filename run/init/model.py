@@ -43,13 +43,16 @@ def init_model_from_config(cfg: DictConfig, pretrained: bool):
 
     model.add_module("forward_features", forward_features)
     if cfg.head.type == "linear":
+        out_features = backbone.out_features
+        if cfg.use_multi_view:
+            out_features *= 2
         # "cancer", "biopsy", "invasive", "age_3", "machine_id_enc", "site_id"
-        head = nn.Linear(backbone.out_features, 1, bias=True)
-        head_biopsy = nn.Linear(backbone.out_features, 1, bias=True)
-        head_invasive = nn.Linear(backbone.out_features, 1, bias=True)
-        head_age = nn.Linear(backbone.out_features, 1, bias=True)
-        head_machine_id = nn.Linear(backbone.out_features, 11, bias=True)
-        head_site_id = nn.Linear(backbone.out_features, 1, bias=True)
+        head = nn.Linear(out_features, 1, bias=True)
+        head_biopsy = nn.Linear(out_features, 1, bias=True)
+        head_invasive = nn.Linear(out_features, 1, bias=True)
+        head_age = nn.Linear(out_features, 1, bias=True)
+        head_machine_id = nn.Linear(out_features, 11, bias=True)
+        head_site_id = nn.Linear(out_features, 1, bias=True)
         # LR model
         # "cancer", "biopsy", "invasive"
         # head_2 = nn.Linear(backbone.out_features, 1, bias=True)
