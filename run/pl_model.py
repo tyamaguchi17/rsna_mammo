@@ -88,6 +88,9 @@ class PLModel(LightningModule):
                 train_dataset = WrapperDataset(
                     raw_datasets["train"], transforms["train"], "train"
                 )
+                pos_cnt = train_dataset.base.df["cancer"].sum() * (
+                    cfg.dataset.positive_aug_num + 1
+                )
                 if cfg.dataset.positive_aug_num > 0:
                     train_positive_dataset = WrapperDataset(
                         raw_datasets["train_positive"], transforms["train"], "train"
@@ -99,17 +102,13 @@ class PLModel(LightningModule):
                     train_dataset = ConcatDataset(train_dataset)
                 self.datasets["train"] = train_dataset
                 logger.info(f"{phase}: {len(self.datasets[phase])}")
-                logger.info(
-                    f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()*(cfg.dataset.positive_aug_num+1)}"
-                )
+                logger.info(f"{phase} positive records: {pos_cnt}")
             else:
                 self.datasets[phase] = WrapperDataset(
                     raw_datasets[phase], transforms[phase], phase
                 )
                 logger.info(f"{phase}: {len(self.datasets[phase])}")
-                logger.info(
-                    f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()}"
-                )
+                logger.info(f"{phase} positive records: {pos_cnt}")
 
         logger.info(
             f"training steps per epoch: {len(self.datasets['train'])/cfg.training.batch_size}"

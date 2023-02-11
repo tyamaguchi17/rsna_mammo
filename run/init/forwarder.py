@@ -12,9 +12,7 @@ class Forwarder(nn.Module):
     def __init__(self, cfg: DictConfig, model: nn.Module) -> None:
         super().__init__()
         self.model = model
-        self.ema = ExponentialMovingAverage(
-            self.model.parameters(), decay=0.999
-        )
+        self.ema = ExponentialMovingAverage(self.model.parameters(), decay=0.999)
         self.cfg = cfg
 
     def loss_bce(
