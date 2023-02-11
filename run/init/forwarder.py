@@ -5,12 +5,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from omegaconf import DictConfig
 from torch import Tensor
+from torch_ema import ExponentialMovingAverage
 
 
 class Forwarder(nn.Module):
     def __init__(self, cfg: DictConfig, model: nn.Module) -> None:
         super().__init__()
         self.model = model
+        self.ema = ExponentialMovingAverage(self.forwarder.model.parameters(), decay=0.999)
         self.cfg = cfg
 
     def loss_bce(
@@ -116,16 +118,17 @@ class Forwarder(nn.Module):
                 labels_site_id=labels_site_id,
             )
         else:
-            embed_features = self.model.forward_features(inputs)
-            logits = self.model.head.head(embed_features)
-            logits_biopsy = self.model.head.head_biopsy(embed_features)
-            logits_invasive = self.model.head.head_invasive(embed_features)
-            logits_age = self.model.head.head_age(embed_features)
-            logits_machine_id = self.model.head.head_machine_id(embed_features)
-            logits_site_id = self.model.head.head_site_id(embed_features)
-            # logits_2 = self.model.head.head_2(embed_features)
-            # logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
-            # logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
+            with self.ema.average_parameters():
+                embed_features = self.model.forward_features(inputs)
+                logits = self.model.head.head(embed_features)
+                logits_biopsy = self.model.head.head_biopsy(embed_features)
+                logits_invasive = self.model.head.head_invasive(embed_features)
+                logits_age = self.model.head.head_age(embed_features)
+                logits_machine_id = self.model.head.head_machine_id(embed_features)
+                logits_site_id = self.model.head.head_site_id(embed_features)
+                # logits_2 = self.model.head.head_2(embed_features)
+                # logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
+                # logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
 
             loss = self.loss(
                 logits=logits,

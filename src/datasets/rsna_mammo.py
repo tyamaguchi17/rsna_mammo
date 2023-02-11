@@ -50,31 +50,47 @@ class RSNADataset(Dataset):
         fold_path: Optional[str] = "./fold/train_with_fold.csv",
         data_type: str = "train",
         pl_path: Optional[str] = None,
+        rsna_bbox_path: Optional[str] = "./bboxes/rsna/det_result_001_baseline.csv",
+        vindr_bbox_path: Optional[str] = "./bboxes/vindr/det_result_vindr_001_baseline.csv",
     ) -> pd.DataFrame:
         root = cls.ROOT_PATH
 
         if data_type == "train":
             if fold_path is not None:
                 df = pd.read_csv(fold_path)
+                df_bbox = pd.read_csv(rsna_bbox_path)
+                df_bbox["patient_id"] = df_bbox["name"].map(lambda x:x.split("/")[0]).astype(int)
+                df_bbox["image_id"] = df_bbox["name"].map(lambda x:x.split("/")[1].replace(".png", "")).astype(int)
+                df = df.merge(df_bbox, on=["patient_id", "image_id"])
                 if num_records:
                     df = df[:num_records]
+                df["is_rsna"] = 1
                 return df
             else:
+                # not supported
                 df = pd.read_csv(str(root / "train.csv"))
+                assert 0==1
         elif data_type == "vindr":
             if pl_path is None:
                 df = pd.read_csv("./vindr/vindr_train.csv")
                 df["cancer"] = 0
             else:
                 df = pd.read_csv(pl_path)
+            df_bbox = pd.read_csv(vindr_bbox_path)
+            df_bbox["patient_id"] = df_bbox["name"].map(lambda x:x.split("_")[0]).astype(str)
+            df_bbox["image_id"] = df_bbox["name"].map(lambda x:x.split("_")[1].replace(".png", "")).astype(str)
+            df = df.merge(df_bbox, on=["patient_id", "image_id"])
             df["biopsy"] = 0
             df["invasive"] = 0
             df["site_id"] = 0
             df["machine_id"] = -1
+            df["is_rsna"] = 0
             return df
 
         elif data_type == "test":
+            # not supported
             df = pd.read_csv(str(root / "sample_submission.csv"))
+            assert 0==1
             return df
 
         n_splits = num_folds
@@ -125,6 +141,7 @@ class RSNADataset(Dataset):
         self.roi_th = cfg.roi_th
         self.roi_buffer = cfg.roi_buffer
         self.use_multi = cfg.use_multi
+        self.use_yolo = cfg.use_yolo
 
         if cfg.use_cache:
             cache_dir = "/tmp/rsna/"
@@ -290,16 +307,19 @@ class RSNADataset(Dataset):
             )
         return x_start, y_start, x_end, y_end
 
-    def get_bbox_aug(self, image):
+    def get_bbox_aug(self, image, index):
         cfg = self.cfg_aug
         if random.uniform(0, 1) < cfg.p_th:
             th = random.uniform(cfg.roi_th_min, cfg.roi_th_max)
         else:
             th = self.roi_th
         buffer = self.roi_buffer
-        x_min, y_min, x_max, y_max = self.get_roi_crop(
-            image, threshold=th, buffer=buffer
-        )
+        if random.uniform(0, 1) <  cfg.p_roi_crop:
+            x_min, y_min, x_max, y_max = self.get_roi_crop(
+                image, threshold=th, buffer=buffer
+            )
+        else:
+            x_min, y_min, x_max, y_max = self.df[['xmin', 'ymin', 'xmax', 'ymax']].values[index]
         if random.uniform(0, 1) < cfg.p_crop_resize:
             crop_scale = random.uniform(
                 cfg.bbox_size_scale_min, cfg.bbox_size_scale_max
@@ -316,10 +336,14 @@ class RSNADataset(Dataset):
             y_max = min(image.shape[0], int(y_g + dy / 2))
         return x_min, y_min, x_max, y_max
 
-    def get_bbox(self, image):
+    def get_bbox(self, image, index):
         th = self.roi_th
         buffer = self.roi_buffer
-        return self.get_roi_crop(image, threshold=th, buffer=buffer)
+        if self.use_yolo:
+            x_min, y_min, x_max, y_max = self.df[['xmin', 'ymin', 'xmax', 'ymax']].values[index]
+        else:
+            x_min, y_min, x_max, y_max = self.get_roi_crop(image, threshold=th, buffer=buffer)
+        return x_min, y_min, x_max, y_max
 
     def __getitem__(self, index: int):
 
@@ -335,17 +359,17 @@ class RSNADataset(Dataset):
             image_2 = self.read_image(idx_view_2)
 
         if self.phase == "train":
-            x_min, y_min, x_max, y_max = self.get_bbox_aug(image_1)
+            x_min, y_min, x_max, y_max = self.get_bbox_aug(image_1, idx_view_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
             if self.use_multi:
-                x_min, y_min, x_max, y_max = self.get_bbox_aug(image_2)
+                x_min, y_min, x_max, y_max = self.get_bbox_aug(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
                 image_1, image_2 = self.augmentation([image_1, image_2])
         else:
-            x_min, y_min, x_max, y_max = self.get_bbox(image_1)
+            x_min, y_min, x_max, y_max = self.get_bbox(image_1, idx_view_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
             if self.use_multi:
-                x_min, y_min, x_max, y_max = self.get_bbox(image_2)
+                x_min, y_min, x_max, y_max = self.get_bbox(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
 
         meta_data = self.get_meta_data(index)

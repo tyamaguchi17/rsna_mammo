@@ -9,7 +9,7 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
 from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, ConcatDataset
 
 from run.init.dataset import init_datasets_from_config
 from run.init.forwarder import Forwarder
@@ -84,13 +84,29 @@ class PLModel(LightningModule):
             "test": preprocessing.get_test_transform(),
         }
         for phase in ["train", "val", "test"]:
-            self.datasets[phase] = WrapperDataset(
-                raw_datasets[phase], transforms[phase], phase
-            )
-            logger.info(f"{phase}: {len(self.datasets[phase])}")
-            logger.info(
-                f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()}"
-            )
+            if phase == "train":
+                train_dataset = WrapperDataset(
+                    raw_datasets["train"], transforms["train"], "train"
+                )
+                if cfg.dataset.positive_aug_num > 0:
+                    train_positive_dataset = WrapperDataset(
+                        raw_datasets["train_positive"], transforms["train"], "train"
+                    )
+                    train_dataset = [train_dataset] + [train_positive_dataset for _ in range(cfg.dataset.positive_aug_num)]
+                    train_dataset = ConcatDataset(train_dataset)
+                self.datasets["train"] = train_dataset
+                logger.info(f"{phase}: {len(self.datasets[phase])}")
+                logger.info(
+                    f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()*(cfg.dataset.positive_aug_num+1)}"
+                )
+            else:
+                self.datasets[phase] = WrapperDataset(
+                    raw_datasets[phase], transforms[phase], phase
+                )
+                logger.info(f"{phase}: {len(self.datasets[phase])}")
+                logger.info(
+                    f"{phase} positive records: {self.datasets[phase].base.df['cancer'].sum()}"
+                )
 
         logger.info(
             f"training steps per epoch: {len(self.datasets['train'])/cfg.training.batch_size}"
@@ -123,6 +139,16 @@ class PLModel(LightningModule):
         self.log(
             "lr",
             sch.get_last_lr()[0],
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+            logger=True,
+            sync_dist=True,
+            batch_size=1,
+        )
+        self.log(
+            "lr_head",
+            sch.get_last_lr()[1],
             on_step=True,
             on_epoch=False,
             prog_bar=True,
@@ -339,6 +365,9 @@ class PLModel(LightningModule):
         if scheduler is None:
             return [optimizer]
         return [optimizer], [scheduler]
+
+    def on_before_zero_grad(self, *args, **kwargs):
+        self.forwarder.ema.update(self.forwarder.model.parameters())
 
     def _dataloader(self, phase: str) -> DataLoader:
         logger.info(f"{phase} data loader called")

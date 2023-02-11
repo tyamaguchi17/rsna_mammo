@@ -124,6 +124,12 @@ def main(cfg: DictConfig, pl_model: type) -> Path:
             weights_path = str(Path(checkpoint_cb.dirpath) / "model_weights.pth")
             logger.info(f"Extracting and saving weights: {weights_path}")
             torch.save(model.forwarder.model.state_dict(), weights_path)
+            # save ema weights
+            weights_path = str(Path(checkpoint_cb.dirpath) / "model_weights_ema.pth")
+            model.forwarder.ema.store()
+            model.forwarder.ema.copy_to()
+            torch.save(model.forwarder.model.state_dict(), weights_path)
+            model.forwarder.ema.restore()
 
     # return path to checkpoints directory
     if checkpoint_cb.dirpath is not None:

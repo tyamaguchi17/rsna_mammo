@@ -10,3 +10,4 @@ scikit-learn==1.1.2
 pfio==1.0.1
 transformers==4.19.1
 pydicom==2.3.0
+torch-ema==0.3
