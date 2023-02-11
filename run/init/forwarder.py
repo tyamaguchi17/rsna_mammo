@@ -13,7 +13,7 @@ class Forwarder(nn.Module):
         super().__init__()
         self.model = model
         self.ema = ExponentialMovingAverage(
-            self.forwarder.model.parameters(), decay=0.999
+            self.model.parameters(), decay=0.999
         )
         self.cfg = cfg
 
