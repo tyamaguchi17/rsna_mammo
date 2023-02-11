@@ -8,7 +8,7 @@ from torch import Tensor
 from torch_ema import ExponentialMovingAverage as EMA
 
 
-class ExponentialMovingAverage(nn.Module, EMA):
+class ExponentialMovingAverage(EMA, nn.Module):
     pass
 
 
