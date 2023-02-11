@@ -9,7 +9,7 @@ from omegaconf import DictConfig
 from pytorch_lightning import LightningModule
 from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
-from torch.utils.data import DataLoader, ConcatDataset
+from torch.utils.data import ConcatDataset, DataLoader
 
 from run.init.dataset import init_datasets_from_config
 from run.init.forwarder import Forwarder
@@ -92,7 +92,10 @@ class PLModel(LightningModule):
                     train_positive_dataset = WrapperDataset(
                         raw_datasets["train_positive"], transforms["train"], "train"
                     )
-                    train_dataset = [train_dataset] + [train_positive_dataset for _ in range(cfg.dataset.positive_aug_num)]
+                    train_dataset = [train_dataset] + [
+                        train_positive_dataset
+                        for _ in range(cfg.dataset.positive_aug_num)
+                    ]
                     train_dataset = ConcatDataset(train_dataset)
                 self.datasets["train"] = train_dataset
                 logger.info(f"{phase}: {len(self.datasets[phase])}")
@@ -237,7 +240,9 @@ class PLModel(LightningModule):
                 if self.datasets[phase].base.data_name == "vindr":
                     df_vindr = pd.read_csv("./vindr/vindr_train.csv")
                     df_vindr["cancer"] = df["pred"]
-                    df_vindr.to_csv(test_results_filepath / "vinder_pl.csv", index=False)
+                    df_vindr.to_csv(
+                        test_results_filepath / "vinder_pl.csv", index=False
+                    )
 
         loss = (
             torch.cat([torch.atleast_1d(x["loss"]) for x in outputs])

@@ -51,7 +51,9 @@ class RSNADataset(Dataset):
         data_type: str = "train",
         pl_path: Optional[str] = None,
         rsna_bbox_path: Optional[str] = "./bboxes/rsna/det_result_001_baseline.csv",
-        vindr_bbox_path: Optional[str] = "./bboxes/vindr/det_result_vindr_001_baseline.csv",
+        vindr_bbox_path: Optional[
+            str
+        ] = "./bboxes/vindr/det_result_vindr_001_baseline.csv",
     ) -> pd.DataFrame:
         root = cls.ROOT_PATH
 
@@ -59,8 +61,14 @@ class RSNADataset(Dataset):
             if fold_path is not None:
                 df = pd.read_csv(fold_path)
                 df_bbox = pd.read_csv(rsna_bbox_path)
-                df_bbox["patient_id"] = df_bbox["name"].map(lambda x:x.split("/")[0]).astype(int)
-                df_bbox["image_id"] = df_bbox["name"].map(lambda x:x.split("/")[1].replace(".png", "")).astype(int)
+                df_bbox["patient_id"] = (
+                    df_bbox["name"].map(lambda x: x.split("/")[0]).astype(int)
+                )
+                df_bbox["image_id"] = (
+                    df_bbox["name"]
+                    .map(lambda x: x.split("/")[1].replace(".png", ""))
+                    .astype(int)
+                )
                 df = df.merge(df_bbox, on=["patient_id", "image_id"])
                 if num_records:
                     df = df[:num_records]
@@ -69,7 +77,7 @@ class RSNADataset(Dataset):
             else:
                 # not supported
                 df = pd.read_csv(str(root / "train.csv"))
-                assert 0==1
+                assert 0 == 1
         elif data_type == "vindr":
             if pl_path is None:
                 df = pd.read_csv("./vindr/vindr_train.csv")
@@ -77,8 +85,14 @@ class RSNADataset(Dataset):
             else:
                 df = pd.read_csv(pl_path)
             df_bbox = pd.read_csv(vindr_bbox_path)
-            df_bbox["patient_id"] = df_bbox["name"].map(lambda x:x.split("_")[0]).astype(str)
-            df_bbox["image_id"] = df_bbox["name"].map(lambda x:x.split("_")[1].replace(".png", "")).astype(str)
+            df_bbox["patient_id"] = (
+                df_bbox["name"].map(lambda x: x.split("_")[0]).astype(str)
+            )
+            df_bbox["image_id"] = (
+                df_bbox["name"]
+                .map(lambda x: x.split("_")[1].replace(".png", ""))
+                .astype(str)
+            )
             df = df.merge(df_bbox, on=["patient_id", "image_id"])
             df["biopsy"] = 0
             df["invasive"] = 0
@@ -90,7 +104,7 @@ class RSNADataset(Dataset):
         elif data_type == "test":
             # not supported
             df = pd.read_csv(str(root / "sample_submission.csv"))
-            assert 0==1
+            assert 0 == 1
             return df
 
         n_splits = num_folds
@@ -314,12 +328,14 @@ class RSNADataset(Dataset):
         else:
             th = self.roi_th
         buffer = self.roi_buffer
-        if random.uniform(0, 1) <  cfg.p_roi_crop:
+        if random.uniform(0, 1) < cfg.p_roi_crop:
             x_min, y_min, x_max, y_max = self.get_roi_crop(
                 image, threshold=th, buffer=buffer
             )
         else:
-            x_min, y_min, x_max, y_max = self.df[['xmin', 'ymin', 'xmax', 'ymax']].values[index]
+            x_min, y_min, x_max, y_max = self.df[
+                ["xmin", "ymin", "xmax", "ymax"]
+            ].values[index]
         if random.uniform(0, 1) < cfg.p_crop_resize:
             crop_scale = random.uniform(
                 cfg.bbox_size_scale_min, cfg.bbox_size_scale_max
@@ -340,9 +356,13 @@ class RSNADataset(Dataset):
         th = self.roi_th
         buffer = self.roi_buffer
         if self.use_yolo:
-            x_min, y_min, x_max, y_max = self.df[['xmin', 'ymin', 'xmax', 'ymax']].values[index]
+            x_min, y_min, x_max, y_max = self.df[
+                ["xmin", "ymin", "xmax", "ymax"]
+            ].values[index]
         else:
-            x_min, y_min, x_max, y_max = self.get_roi_crop(image, threshold=th, buffer=buffer)
+            x_min, y_min, x_max, y_max = self.get_roi_crop(
+                image, threshold=th, buffer=buffer
+            )
         return x_min, y_min, x_max, y_max
 
     def __getitem__(self, index: int):

@@ -43,7 +43,7 @@ def get_rsna_dataset(
         train_df = df[(df["fold"] != val_fold) & (df["fold"] != test_fold)]
         val_df = df[df["fold"] == val_fold]
         test_df = df[df["fold"] == test_fold]
-        train_positive = train_df[train_df["cancer"]==1]
+        train_positive = train_df[train_df["cancer"] == 1]
 
         train_dataset = RSNADataset(train_df, phase="train", cfg=cfg)
         val_dataset = RSNADataset(val_df, phase="test", cfg=cfg)
@@ -65,5 +65,5 @@ def get_rsna_dataset(
 
     datasets = {"train": train_dataset, "val": val_dataset, "test": test_dataset}
     if phase == "train":
-        dataset["train_positive"] = train_positive_dataset
+        datasets["train_positive"] = train_positive_dataset
     return datasets
