@@ -87,7 +87,7 @@ class Forwarder(nn.Module):
 
         if use_multi_view:
             bs, ch, h, w = inputs.shape
-            inputs = inputs.view(bs * ch, h, w)
+            inputs = inputs.view(bs * ch, 1, h, w)
 
         # labels
         labels = batch["label"].to(torch.float16)
