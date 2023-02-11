@@ -14,8 +14,6 @@ logger = getLogger(__name__)
 
 def init_model_from_config(cfg: DictConfig, pretrained: bool):
     model = nn.Sequential()
-    if cfg.use_multi_view:
-        cfg.in_chans *= 2
     backbone = init_backbone(cfg, pretrained=pretrained)
     forward_features = nn.Sequential()
 
