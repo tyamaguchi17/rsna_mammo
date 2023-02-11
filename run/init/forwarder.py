@@ -5,18 +5,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from omegaconf import DictConfig
 from torch import Tensor
-from torch_ema import ExponentialMovingAverage as EMA
-
-
-class ExponentialMovingAverage(EMA, nn.Module):
-    pass
+from torch_ema import ExponentialMovingAverage
 
 
 class Forwarder(nn.Module):
     def __init__(self, cfg: DictConfig, model: nn.Module) -> None:
         super().__init__()
         self.model = model
-        self.ema = ExponentialMovingAverage(self.model.parameters(), decay=0.999)
+        self.ema = None
         self.cfg = cfg
 
     def loss_bce(
@@ -78,6 +74,9 @@ class Forwarder(nn.Module):
     def forward(
         self, batch: Dict[str, Tensor], phase: str, epoch=None
     ) -> Tuple[Tensor, Tensor]:
+
+        if self.ema is None:
+            self.ema = ExponentialMovingAverage(self.model.parameters(), decay=0.999)
 
         # inputs: Input tensor.
         inputs = batch["image"]
