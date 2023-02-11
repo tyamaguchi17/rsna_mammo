@@ -10,6 +10,7 @@ from pytorch_lightning import LightningModule
 from sklearn.metrics import average_precision_score, roc_auc_score
 from torch import Tensor
 from torch.utils.data import ConcatDataset, DataLoader
+from torch_ema import ExponentialMovingAverage
 
 from run.init.dataset import init_datasets_from_config
 from run.init.forwarder import Forwarder
@@ -73,6 +74,7 @@ class PLModel(LightningModule):
         pretrained = False if cfg.training.debug else True
         model = init_model_from_config(cfg.model, pretrained=pretrained)
         self.forwarder = Forwarder(cfg.forwarder, model)
+        self.forwarder.ema = ExponentialMovingAverage(model.parameters(), decay=0.999)
 
         raw_datasets = init_datasets_from_config(cfg.dataset)
 
