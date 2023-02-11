@@ -39,10 +39,10 @@ def get_rsna_dataset(
         fold_path=cfg.fold_path,
     )
 
+    train_df = df[(df["fold"] != val_fold) & (df["fold"] != test_fold)]
+    val_df = df[df["fold"] == val_fold]
+    test_df = df[df["fold"] == test_fold]
     if phase == "train":
-        train_df = df[(df["fold"] != val_fold) & (df["fold"] != test_fold)]
-        val_df = df[df["fold"] == val_fold]
-        test_df = df[df["fold"] == test_fold]
         train_positive = train_df[train_df["cancer"] == 1]
 
         train_dataset = RSNADataset(train_df, phase="train", cfg=cfg)

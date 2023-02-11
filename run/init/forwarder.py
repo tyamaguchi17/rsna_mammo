@@ -12,6 +12,7 @@ class Forwarder(nn.Module):
     def __init__(self, cfg: DictConfig, model: nn.Module) -> None:
         super().__init__()
         self.model = model
+        # workaround for device inconsistency of ExponentialMovingAverage
         self.ema = None
         self.cfg = cfg
 
@@ -75,6 +76,7 @@ class Forwarder(nn.Module):
         self, batch: Dict[str, Tensor], phase: str, epoch=None
     ) -> Tuple[Tensor, Tensor]:
 
+        # workaround for device inconsistency of ExponentialMovingAverage
         if self.ema is None:
             self.ema = ExponentialMovingAverage(self.model.parameters(), decay=0.999)
 
