@@ -131,7 +131,21 @@ class Forwarder(nn.Module):
                 labels_site_id=labels_site_id,
             )
         else:
-            with self.ema.average_parameters():
+            if phase == "test":
+                with self.ema.average_parameters():
+                    embed_features = self.model.forward_features(inputs)
+                    if use_multi_view:
+                        embed_features = embed_features.view(bs, -1)
+                    logits = self.model.head.head(embed_features)
+                    logits_biopsy = self.model.head.head_biopsy(embed_features)
+                    logits_invasive = self.model.head.head_invasive(embed_features)
+                    logits_age = self.model.head.head_age(embed_features)
+                    logits_machine_id = self.model.head.head_machine_id(embed_features)
+                    logits_site_id = self.model.head.head_site_id(embed_features)
+                    # logits_2 = self.model.head.head_2(embed_features)
+                    # logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
+                    # logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
+            elif phase == "val":
                 embed_features = self.model.forward_features(inputs)
                 if use_multi_view:
                     embed_features = embed_features.view(bs, -1)
