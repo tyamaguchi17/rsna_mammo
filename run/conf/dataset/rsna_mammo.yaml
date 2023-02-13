@@ -12,6 +12,7 @@ use_cache: false
 roi_th: 0.1
 roi_buffer: 30
 use_multi_view: false
+use_multi_lat: false
 use_yolo: false
 augmentation:
   p_th: 0.5
@@ -26,5 +27,7 @@ augmentation:
   p_mask_view_1 : 0.0
   p_mask_view_2: 0.0
   p_roi_crop: 1.0
+  p_shuffle_lat: 0.0
 positive_aug_num: 0
 view: null
+lat: null

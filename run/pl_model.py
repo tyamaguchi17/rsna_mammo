@@ -90,6 +90,7 @@ class PLModel(LightningModule):
                     transforms["train"],
                     "train",
                     view=cfg.dataset.view,
+                    lat=cfg.dataset.lat,
                 )
                 pos_cnt = train_dataset.base.df["cancer"].sum() * (
                     cfg.dataset.positive_aug_num + 1
@@ -213,9 +214,7 @@ class PLModel(LightningModule):
         df["label"] = epoch_results["label"]
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
-        df["pred_age"] = (
-            sigmoid(epoch_results["pred_age"].reshape(-1)) * 90
-        )
+        df["pred_age"] = sigmoid(epoch_results["pred_age"].reshape(-1)) * 90
         df["pred_machine_id"] = (
             epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
         )

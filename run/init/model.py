@@ -46,18 +46,22 @@ def init_model_from_config(cfg: DictConfig, pretrained: bool):
         out_features = backbone.out_features
         if cfg.use_multi_view:
             out_features *= 2
-        # "cancer", "biopsy", "invasive", "age_3", "machine_id_enc", "site_id"
+        if cfg.use_multi_lat:
+            out_features *= 2
+        # "cancer", "biopsy", "invasive", "age_scaled", "BIRADS_scaled", "machine_id_enc", "site_id"
         head = nn.Linear(out_features, 1, bias=True)
         head_biopsy = nn.Linear(out_features, 1, bias=True)
         head_invasive = nn.Linear(out_features, 1, bias=True)
+        head_birads = nn.Linear(out_features, 1, bias=True)
         head_age = nn.Linear(out_features, 1, bias=True)
         head_machine_id = nn.Linear(out_features, 11, bias=True)
         head_site_id = nn.Linear(out_features, 1, bias=True)
-        # LR model
-        # "cancer", "biopsy", "invasive"
-        # head_2 = nn.Linear(backbone.out_features, 1, bias=True)
-        # head_biopsy_2 = nn.Linear(backbone.out_features, 1, bias=True)
-        # head_invasive_2 = nn.Linear(backbone.out_features, 1, bias=True)
+        if cfg.use_multi_lat:
+            # LR model
+            head_2 = nn.Linear(out_features, 1, bias=True)
+            head_biopsy_2 = nn.Linear(out_features, 1, bias=True)
+            head_invasive_2 = nn.Linear(out_features, 1, bias=True)
+            head_birads_2 = nn.Linear(out_features, 1, bias=True)
     else:
         raise ValueError(f"{cfg.head.type} is not implemented")
 
@@ -68,9 +72,12 @@ def init_model_from_config(cfg: DictConfig, pretrained: bool):
     head_all.add_module("head_age", head_age)
     head_all.add_module("head_machine_id", head_machine_id)
     head_all.add_module("head_site_id", head_site_id)
-    # head_all.add_module("head_2", head_2)
-    # head_all.add_module("head_biopsy_2", head_biopsy_2)
-    # head_all.add_module("head_invasive_2", head_invasive_2)
+    head_all.add_module("head_birads", head_birads)
+    if cfg.use_multi_lat:
+        head_all.add_module("head_2", head_2)
+        head_all.add_module("head_biopsy_2", head_biopsy_2)
+        head_all.add_module("head_invasive_2", head_invasive_2)
+        head_all.add_module("head_birads_2", head_birads_2)
     model.add_module("head", head_all)
 
     if cfg.restore_path is not None:
