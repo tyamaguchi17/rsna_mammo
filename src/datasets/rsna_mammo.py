@@ -334,7 +334,7 @@ class RSNADataset(Dataset):
             )
         else:
             x_min, y_min, x_max, y_max = self.df[
-                ["xmin", "ymin", "xmax", "ymax"]
+                ["ymin", "xmin", "ymax", "xmax"]
             ].values[index]
         if random.uniform(0, 1) < cfg.p_crop_resize:
             crop_scale = random.uniform(
