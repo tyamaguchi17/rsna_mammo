@@ -20,6 +20,7 @@ META_DATA_LIST = [
     "site_id",
     "machine_id",
     "machine_id_enc",
+    "BIRADS",
 ]
 MACHINE_ID_ENCODER = {
     49: 0,
@@ -70,6 +71,8 @@ class RSNADataset(Dataset):
                     .astype(int)
                 )
                 df = df.merge(df_bbox, on=["patient_id", "image_id"])
+                df.loc[df["cancer"] == 1, "BIRADS"] = 3
+                df.loc[np.isnan(df["BIRADS"]), "BIRADS"] = 1
                 if num_records:
                     df = df[:num_records]
                 df["is_rsna"] = 1
@@ -227,6 +230,7 @@ class RSNADataset(Dataset):
         for meta in META_DATA_LIST:
             res[meta] = int(data[meta])
         res["age_scaled"] = data["age"] / 90
+        res["BIRADS_scaled"] = data["BIRADS"] / 5
         return res
 
     def _read_image(self, index):
@@ -385,15 +389,49 @@ class RSNADataset(Dataset):
                 x_min, y_min, x_max, y_max = self.get_bbox_aug(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
                 image_1, image_2 = self.augmentation([image_1, image_2])
+            if self.use_multi_lat:
+                image_id_view_3, image_id_view_4 = self.get_different_lat_ids(index)
+                idx_view_3 = self.idx_dict[image_id_view_3]
+                idx_view_4 = self.idx_dict[image_id_view_4]
+                image_3 = self.read_image(idx_view_3)
+                image_4 = self.read_image(idx_view_4)
+                x_min, y_min, x_max, y_max = self.get_bbox_aug(image_3, idx_view_3)
+                image_3 = image_3[y_min:y_max, x_min:x_max]
+                x_min, y_min, x_max, y_max = self.get_bbox_aug(image_4, idx_view_4)
+                image_4 = image_4[y_min:y_max, x_min:x_max]
         else:
             x_min, y_min, x_max, y_max = self.get_bbox(image_1, idx_view_1)
             image_1 = image_1[y_min:y_max, x_min:x_max]
             if self.use_multi_view:
                 x_min, y_min, x_max, y_max = self.get_bbox(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
+            if self.use_multi_lat:
+                image_id_view_3, image_id_view_4 = self.get_different_lat_ids(index)
+                idx_view_3 = self.idx_dict[image_id_view_3]
+                idx_view_4 = self.idx_dict[image_id_view_4]
+                image_3 = self.read_image(idx_view_3)
+                image_4 = self.read_image(idx_view_4)
+                x_min, y_min, x_max, y_max = self.get_bbox(image_3, idx_view_3)
+                image_3 = image_3[y_min:y_max, x_min:x_max]
+                x_min, y_min, x_max, y_max = self.get_bbox(image_4, idx_view_4)
+                image_4 = image_4[y_min:y_max, x_min:x_max]
 
-        meta_data = self.get_meta_data(index)
-
+        meta_data = self.get_meta_data(idx_view_1)
+        if self.use_multi_lat:
+            label_2 = self.df.loc[idx_view_3, "cancer"]
+            laterality_2 = self.df.loc[idx_view_3, "laterality"]
+            meta_data_2 = self.get_meta_data(idx_view_3)
+            if self.phase == "train":
+                if random.uniform(0, 1) < self.cfg_aug.p_shuffle_lat:
+                    image_1, image_2, image_3, image_4 = (
+                        image_3,
+                        image_4,
+                        image_1,
+                        image_2,
+                    )
+                    label, label_2 = label_2, label
+                    laterality, laterality_2 = laterality_2, laterality
+                    meta_data, meta_data_2 = meta_data_2, meta_data
         res = {
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
@@ -410,8 +448,15 @@ class RSNADataset(Dataset):
                 }
             )
         res.update(meta_data)
-        # res["label_2"] = res["label"]
-        # res["biopsy_2"] = res["biopsy"]
-        # res["invasive_2"] = res["invasive"]
+        if self.use_multi_lat:
+            res.update({key + "_" + "2": meta_data_2[key] for key in meta_data_2})
+            res.update(
+                {
+                    "image_3": image_3,
+                    "image_4": image_4,
+                    "label_2": label_2,
+                    "laterality_2": laterality_2,
+                }
+            )
 
         return res
