@@ -357,7 +357,7 @@ class RSNADataset(Dataset):
         buffer = self.roi_buffer
         if self.use_yolo:
             x_min, y_min, x_max, y_max = self.df[
-                ["xmin", "ymin", "xmax", "ymax"]
+                ["ymin", "xmin", "ymax", "xmax"]
             ].values[index]
         else:
             x_min, y_min, x_max, y_max = self.get_roi_crop(
