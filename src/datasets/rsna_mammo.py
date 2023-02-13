@@ -158,6 +158,7 @@ class RSNADataset(Dataset):
         self.roi_th = cfg.roi_th
         self.roi_buffer = cfg.roi_buffer
         self.use_multi_view = cfg.use_multi_view
+        self.use_multi_lat = cfg.use_multi_lat
         self.use_yolo = cfg.use_yolo
 
         if cfg.use_cache:
