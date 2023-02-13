@@ -433,12 +433,14 @@ class RSNADataset(Dataset):
                     label, label_2 = label_2, label
                     laterality, laterality_2 = laterality_2, laterality
                     meta_data, meta_data_2 = meta_data_2, meta_data
+        laterality = {"L": 0, "R": 1}[laterality]
+        laterality_2 = {"L": 0, "R": 1}[laterality_2]
         res = {
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
             "patient_id": patient_id,
-            "laterality": {"L": 0, "R": 1}[laterality],
+            "laterality": laterality,
             "label": label,
             "image_1": image_1,
         }
@@ -453,6 +455,8 @@ class RSNADataset(Dataset):
             res.update({key + "_" + "2": meta_data_2[key] for key in meta_data_2})
             res.update(
                 {
+                    "image_id_3": image_id_view_3,
+                    "image_id_4": image_id_view_4,
                     "image_3": image_3,
                     "image_4": image_4,
                     "label_2": label_2,
