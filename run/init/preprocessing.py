@@ -35,7 +35,7 @@ class Preprocessing:
         if cfg.use_light_aug:
             transforms = [
                 A.Resize(self.h_resize_to, self.w_resize_to),
-                A.ShiftScaleRotate(0.1, 0.2, 15),
+                A.ShiftScaleRotate(0.1, 0.2, 45),
                 A.VerticalFlip(p=0.5),
                 A.HorizontalFlip(p=0.5),
                 A.RandomBrightnessContrast(0.3, 0.3, p=0.5),
