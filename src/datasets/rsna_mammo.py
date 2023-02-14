@@ -379,6 +379,16 @@ class RSNADataset(Dataset):
 
         idx_view_1 = self.idx_dict[image_id_view_1]
         idx_view_2 = self.idx_dict[image_id_view_2]
+
+        image_id_view_3, image_id_view_4 = self.get_different_lat_ids(index)
+        idx_view_3 = self.idx_dict[image_id_view_3]
+        idx_view_4 = self.idx_dict[image_id_view_4]
+
+        meta_data = self.get_meta_data(idx_view_1)
+        label_2 = self.df.loc[idx_view_3, "cancer"]
+        laterality_2 = self.df.loc[idx_view_3, "laterality"]
+        meta_data_2 = self.get_meta_data(idx_view_3)
+
         image_1 = self.read_image(idx_view_1)
         if self.use_multi_view:
             image_2 = self.read_image(idx_view_2)
@@ -407,9 +417,6 @@ class RSNADataset(Dataset):
                 x_min, y_min, x_max, y_max = self.get_bbox(image_2, idx_view_2)
                 image_2 = image_2[y_min:y_max, x_min:x_max]
             if self.use_multi_lat:
-                image_id_view_3, image_id_view_4 = self.get_different_lat_ids(index)
-                idx_view_3 = self.idx_dict[image_id_view_3]
-                idx_view_4 = self.idx_dict[image_id_view_4]
                 image_3 = self.read_image(idx_view_3)
                 image_4 = self.read_image(idx_view_4)
                 x_min, y_min, x_max, y_max = self.get_bbox(image_3, idx_view_3)
@@ -417,10 +424,6 @@ class RSNADataset(Dataset):
                 x_min, y_min, x_max, y_max = self.get_bbox(image_4, idx_view_4)
                 image_4 = image_4[y_min:y_max, x_min:x_max]
 
-        meta_data = self.get_meta_data(idx_view_1)
-        label_2 = self.df.loc[idx_view_3, "cancer"]
-        laterality_2 = self.df.loc[idx_view_3, "laterality"]
-        meta_data_2 = self.get_meta_data(idx_view_3)
         if self.use_multi_lat:
             if self.phase == "train":
                 if random.uniform(0, 1) < self.cfg_aug.p_shuffle_lat:
