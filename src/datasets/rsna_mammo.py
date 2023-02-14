@@ -446,7 +446,9 @@ class RSNADataset(Dataset):
             "image_id_4": image_id_view_4,
             "patient_id": patient_id,
             "laterality": laterality,
+            "laterality_2": laterality_2,
             "label": label,
+            "label_2": label_2,
             "image_1": image_1,
         }
         if self.use_multi_view:
@@ -462,8 +464,6 @@ class RSNADataset(Dataset):
                 {
                     "image_3": image_3,
                     "image_4": image_4,
-                    "label_2": label_2,
-                    "laterality_2": laterality_2,
                 }
             )
 
