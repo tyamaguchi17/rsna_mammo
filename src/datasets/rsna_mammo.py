@@ -442,6 +442,8 @@ class RSNADataset(Dataset):
             "original_index": self.df.at[index, "original_index"],
             "image_id": image_id_view_1,
             "image_id_2": image_id_view_2,
+            "image_id_3": image_id_view_3,
+            "image_id_4": image_id_view_4,
             "patient_id": patient_id,
             "laterality": laterality,
             "label": label,
@@ -458,8 +460,6 @@ class RSNADataset(Dataset):
             res.update({key + "_" + "2": meta_data_2[key] for key in meta_data_2})
             res.update(
                 {
-                    "image_id_3": image_id_view_3,
-                    "image_id_4": image_id_view_4,
                     "image_3": image_3,
                     "image_4": image_4,
                     "label_2": label_2,

@@ -129,7 +129,7 @@ class PLModel(LightningModule):
 
     def training_step(self, batch: Dict[str, Tensor], batch_idx: int):
         additional_info = {}
-        _, loss, _, _, _, _, _, _, _ = self.forwarder.forward(
+        _, loss, _, _, _, _, _, _, _, _, _, _, _ = self.forwarder.forward(
             batch, phase="train", epoch=self.current_epoch, **additional_info
         )
 
@@ -177,6 +177,8 @@ class PLModel(LightningModule):
             "original_index",
             "image_id",
             "image_id_2",
+            "image_id_3",
+            "image_id_4",
             "patient_id",
             "laterality",
             "label",
@@ -184,6 +186,10 @@ class PLModel(LightningModule):
             "pred_biopsy",
             "pred_invasive",
             "pred_birads",
+            "pred_2",
+            "pred_biopsy_2",
+            "pred_invasive_2",
+            "pred_birads_2",
             "pred_age",
             "pred_machine_id",
             "pred_site_id",
@@ -207,15 +213,25 @@ class PLModel(LightningModule):
                 .astype(int),
                 "image_id": epoch_results["image_id"].reshape(-1),
                 "image_id_2": epoch_results["image_id_2"].reshape(-1),
+                "image_id_3": epoch_results["image_id_3"].reshape(-1),
+                "image_id_4": epoch_results["image_id_4"].reshape(-1),
                 "patient_id": epoch_results["patient_id"].reshape(-1),
                 "laterality": epoch_results["laterality"].reshape(-1),
             }
         )
         df["pred"] = sigmoid(epoch_results["pred"][:, 0].reshape(-1))
         df["label"] = epoch_results["label"]
+        df["pred_2"] = sigmoid(epoch_results["pred_2"][:, 0].reshape(-1))
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
         df["pred_birads"] = sigmoid(epoch_results["pred_birads"][:, 0].reshape(-1)) * 5
+        df["pred_biopsy_2"] = sigmoid(epoch_results["pred_biopsy_2"][:, 0].reshape(-1))
+        df["pred_invasive_2"] = sigmoid(
+            epoch_results["pred_invasive_2"][:, 0].reshape(-1)
+        )
+        df["pred_birads_2"] = (
+            sigmoid(epoch_results["pred_birads_2"][:, 0].reshape(-1)) * 5
+        )
         df["pred_age"] = sigmoid(epoch_results["pred_age"].reshape(-1)) * 90
         df["pred_machine_id"] = (
             epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
@@ -328,6 +344,10 @@ class PLModel(LightningModule):
             preds_age,
             preds_machine_id,
             preds_site_id,
+            preds_2,
+            preds_biopsy_2,
+            preds_invasive_2,
+            preds_birads_2,
         ) = self.forwarder.forward(batch, phase=phase, epoch=self.current_epoch)
 
         output = {
@@ -337,11 +357,17 @@ class PLModel(LightningModule):
             "patient_id": batch["patient_id"],
             "image_id": batch["image_id"],
             "image_id_2": batch["image_id_2"],
+            "image_id_3": batch["image_id_3"],
+            "image_id_4": batch["image_id_4"],
             "laterality": batch["laterality"],
             "pred": preds.detach(),
             "pred_biopsy": preds_biopsy.detach(),
             "pred_invasive": preds_invasive.detach(),
             "pred_birads": preds_birads.detach(),
+            "pred_2": preds_2.detach(),
+            "pred_biopsy_2": preds_biopsy_2.detach(),
+            "pred_invasive_2": preds_invasive_2.detach(),
+            "pred_birads_2": preds_birads_2.detach(),
             "pred_age": preds_age.detach(),
             "pred_machine_id": preds_machine_id.detach(),
             "pred_site_id": preds_site_id.detach(),

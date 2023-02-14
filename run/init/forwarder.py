@@ -158,6 +158,11 @@ class Forwarder(nn.Module):
                     labels_machine_id=labels_machine_id,
                     labels_site_id=labels_site_id,
                 )
+            else:
+                logits_2 = logits
+                logits_biopsy_2 = logits_biopsy
+                logits_invasive_2 = logits_invasive
+                logits_birads_2 = logits_birads
         else:
             if phase == "test":
                 with self.ema.average_parameters():
@@ -194,6 +199,11 @@ class Forwarder(nn.Module):
                     logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
                     logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
                     logits_birads_2 = self.model.head.head_birads_2(embed_features)
+                else:
+                    logits_2 = logits
+                    logits_biopsy_2 = logits_biopsy
+                    logits_invasive_2 = logits_invasive
+                    logits_birads_2 = logits_birads
 
             loss = self.loss(
                 logits=logits,
@@ -239,4 +249,8 @@ class Forwarder(nn.Module):
             logits_age,
             logits_machine_id,
             logits_site_id,
+            logits_2,
+            logits_biopsy_2,
+            logits_invasive_2,
+            logits_birads_2,
         )
