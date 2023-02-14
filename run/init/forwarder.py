@@ -235,6 +235,7 @@ class Forwarder(nn.Module):
             embed_features,
             logits_biopsy,
             logits_invasive,
+            logits_birads,
             logits_age,
             logits_machine_id,
             logits_site_id,

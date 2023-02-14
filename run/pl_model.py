@@ -183,6 +183,7 @@ class PLModel(LightningModule):
             "pred",
             "pred_biopsy",
             "pred_invasive",
+            "pred_birads",
             "pred_age",
             "pred_machine_id",
             "pred_site_id",
@@ -214,6 +215,7 @@ class PLModel(LightningModule):
         df["label"] = epoch_results["label"]
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
+        df["pred_birads"] = sigmoid(epoch_results["pred_birads"][:, 0].reshape(-1)) * 5
         df["pred_age"] = sigmoid(epoch_results["pred_age"].reshape(-1)) * 90
         df["pred_machine_id"] = (
             epoch_results["pred_machine_id"].argmax(axis=1).reshape(-1)
@@ -322,6 +324,7 @@ class PLModel(LightningModule):
             embed_features,
             preds_biopsy,
             preds_invasive,
+            preds_birads,
             preds_age,
             preds_machine_id,
             preds_site_id,
@@ -338,6 +341,7 @@ class PLModel(LightningModule):
             "pred": preds.detach(),
             "pred_biopsy": preds_biopsy.detach(),
             "pred_invasive": preds_invasive.detach(),
+            "pred_birads": preds_birads.detach(),
             "pred_age": preds_age.detach(),
             "pred_machine_id": preds_machine_id.detach(),
             "pred_site_id": preds_site_id.detach(),
