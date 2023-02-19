@@ -188,6 +188,14 @@ class Forwarder(nn.Module):
                                 embed_features
                             )
                         )
+                    else:
+                        logits_2 = logits
+                        logits_biopsy_2 = logits_biopsy
+                        logits_invasive_2 = logits_invasive
+                        logits_birads_2 = logits_birads
+                        logits_difficult_negative_case_2 = (
+                            logits_difficult_negative_case
+                        )
             elif phase == "val":
                 embed_features = self.model.forward_features(inputs)
                 if use_multi_view:
