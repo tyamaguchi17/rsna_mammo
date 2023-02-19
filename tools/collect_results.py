@@ -22,7 +22,8 @@ def main(args):
     oof = pd.DataFrame()
     if fold > 0:
         for i in range(fold):
-            fold_dir = (outdir / f"fold_{i}").mkdir(exist_ok=True)
+            fold_dir = (outdir / f"fold_{i}")
+            fold_dir.mkdir(exist_ok=True)
             weights_path = glob.glob(
                 f"../results/{exp_name}_fold_{i}/**/model_weights_ema.pth"
             )[0]
