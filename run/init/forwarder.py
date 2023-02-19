@@ -3,6 +3,7 @@ from typing import Dict, Tuple
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from global_objectives.losses import AUCPRLoss
 from omegaconf import DictConfig
 from torch import Tensor
 from torch_ema import ExponentialMovingAverage
@@ -15,6 +16,10 @@ class Forwarder(nn.Module):
         # workaround for device inconsistency of ExponentialMovingAverage
         self.ema = None
         self.cfg = cfg
+        self.pr_auc_loss = AUCPRLoss()
+
+    def loss_pr_auc(self, logits, labels):
+        return 1 + 10 * self.auc_pr_loss(logits, labels)
 
     def loss_bce(
         self,
@@ -81,6 +86,7 @@ class Forwarder(nn.Module):
             self.loss_ce(logits_machine_id, labels_machine_id) * cfg.machine_id_weight
         )
         loss += self.loss_bce(logits_site_id, labels_site_id) * cfg.site_id_weight
+        loss += self.loss_pr_auc(logits, labels) * cfg.pr_auc_weight
         return loss
 
     def forward(

@@ -76,6 +76,7 @@ forwarder:
     age_weight: 0.0
     machine_id_weight: 0.0
     site_id_weight: 0.0
+    pr_auc_weight: 0.0
 
 #====
 # Dataset

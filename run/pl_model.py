@@ -269,7 +269,9 @@ class PLModel(LightningModule):
             if "patient_id" in df.columns:
                 df = df[["patient_id", "laterality", "label", "pred"]]
                 df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
-                df.to_csv(test_results_filepath / "test_results_view.csv", index=False)
+                df.to_csv(
+                    test_results_filepath / "test_results_breast.csv", index=False
+                )
             else:
                 if self.datasets[phase].base.data_name == "vindr":
                     df_vindr = pd.read_csv("./vindr/vindr_train.csv")
@@ -291,13 +293,14 @@ class PLModel(LightningModule):
             if not test_results_filepath.exists():
                 test_results_filepath.mkdir(exist_ok=True)
             df.to_csv(
-                test_results_filepath / f"epoch_{self.current_epoch}_results_view.csv",
+                test_results_filepath / f"epoch_{self.current_epoch}_results.csv",
                 index=False,
             )
             df = df[["patient_id", "laterality", "label", "pred"]]
             df = df.groupby(by=["patient_id", "laterality"]).mean().reset_index()
             df.to_csv(
-                test_results_filepath / f"epoch_{self.current_epoch}_results.csv",
+                test_results_filepath
+                / f"epoch_{self.current_epoch}_results_breast.csv",
                 index=False,
             )
             weights_filepath = Path(self.cfg.out_dir) / "weights"
