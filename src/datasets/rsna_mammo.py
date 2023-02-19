@@ -21,6 +21,7 @@ META_DATA_LIST = [
     "machine_id",
     "machine_id_enc",
     "BIRADS",
+    "difficult_negative_case",
 ]
 MACHINE_ID_ENCODER = {
     49: 0,

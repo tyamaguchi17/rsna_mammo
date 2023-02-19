@@ -188,10 +188,12 @@ class PLModel(LightningModule):
             "pred_biopsy",
             "pred_invasive",
             "pred_birads",
+            "pred_difficult_negative_case",
             "pred_2",
             "pred_biopsy_2",
             "pred_invasive_2",
             "pred_birads_2",
+            "pred_difficult_negative_case_2",
             "pred_age",
             "pred_machine_id",
             "pred_site_id",
@@ -229,12 +231,18 @@ class PLModel(LightningModule):
         df["pred_biopsy"] = sigmoid(epoch_results["pred_biopsy"][:, 0].reshape(-1))
         df["pred_invasive"] = sigmoid(epoch_results["pred_invasive"][:, 0].reshape(-1))
         df["pred_birads"] = sigmoid(epoch_results["pred_birads"][:, 0].reshape(-1)) * 5
+        df["pred_difficult_negative_case"] = sigmoid(
+            epoch_results["pred_difficult_negative_case"][:, 0].reshape(-1)
+        )
         df["pred_biopsy_2"] = sigmoid(epoch_results["pred_biopsy_2"][:, 0].reshape(-1))
         df["pred_invasive_2"] = sigmoid(
             epoch_results["pred_invasive_2"][:, 0].reshape(-1)
         )
         df["pred_birads_2"] = (
             sigmoid(epoch_results["pred_birads_2"][:, 0].reshape(-1)) * 5
+        )
+        df["pred_difficult_negative_case_2"] = sigmoid(
+            epoch_results["pred_difficult_negative_case_2"][:, 0].reshape(-1)
         )
         df["pred_age"] = sigmoid(epoch_results["pred_age"].reshape(-1)) * 90
         df["pred_machine_id"] = (
@@ -345,6 +353,7 @@ class PLModel(LightningModule):
             preds_biopsy,
             preds_invasive,
             preds_birads,
+            preds_difficult_negative_case,
             preds_age,
             preds_machine_id,
             preds_site_id,
@@ -352,6 +361,7 @@ class PLModel(LightningModule):
             preds_biopsy_2,
             preds_invasive_2,
             preds_birads_2,
+            preds_difficult_negative_case_2,
         ) = self.forwarder.forward(batch, phase=phase, epoch=self.current_epoch)
 
         output = {
@@ -370,10 +380,12 @@ class PLModel(LightningModule):
             "pred_biopsy": preds_biopsy.detach(),
             "pred_invasive": preds_invasive.detach(),
             "pred_birads": preds_birads.detach(),
+            "pred_difficult_negative_case": preds_difficult_negative_case.detach(),
             "pred_2": preds_2.detach(),
             "pred_biopsy_2": preds_biopsy_2.detach(),
             "pred_invasive_2": preds_invasive_2.detach(),
             "pred_birads_2": preds_birads_2.detach(),
+            "pred_difficult_negative_case_2": preds_difficult_negative_case_2.detach(),
             "pred_age": preds_age.detach(),
             "pred_machine_id": preds_machine_id.detach(),
             "pred_site_id": preds_site_id.detach(),

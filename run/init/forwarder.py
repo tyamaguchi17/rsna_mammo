@@ -52,6 +52,7 @@ class Forwarder(nn.Module):
         logits_biopsy,
         logits_invasive,
         logits_birads,
+        logits_difficult_negative_case,
         logits_age,
         logits_machine_id,
         logits_site_id,
@@ -59,6 +60,7 @@ class Forwarder(nn.Module):
         labels_biospy,
         labels_invasive,
         labels_birads,
+        labels_difficult_negative_case,
         labels_age,
         labels_machine_id,
         labels_site_id,
@@ -67,12 +69,18 @@ class Forwarder(nn.Module):
         loss = self.loss_bce(logits, labels) * cfg.cancer_weight
         loss += self.loss_bce(logits_biopsy, labels_biospy) * cfg.biopsy_weight
         loss += self.loss_bce(logits_invasive, labels_invasive) * cfg.invasive_weight
+        loss += self.loss_bce(logits_birads, labels_birads) * cfg.birads_weight
+        loss += (
+            self.loss_bce(
+                logits_difficult_negative_case, labels_difficult_negative_case
+            )
+            * cfg.difficult_negative_case_weight
+        )
         loss += self.loss_bce(logits_age, labels_age) * cfg.age_weight
         loss += (
             self.loss_ce(logits_machine_id, labels_machine_id) * cfg.machine_id_weight
         )
         loss += self.loss_bce(logits_site_id, labels_site_id) * cfg.site_id_weight
-        loss += self.loss_bce(logits_birads, labels_birads) * cfg.birads_weight
         return loss
 
     def forward(
@@ -101,6 +109,9 @@ class Forwarder(nn.Module):
         labels_machine_id = batch["machine_id_enc"]
         labels_site_id = (batch["site_id"] - 1).to(torch.float16)
         labels_birads = batch["BIRADS_scaled"].to(torch.float16)
+        label_difficult_negative_case = batch["difficult_negative_case"].to(
+            torch.float16
+        )
 
         if use_multi_lat:
             # LR model labels
@@ -108,6 +119,9 @@ class Forwarder(nn.Module):
             labels_biospy_2 = batch["biopsy_2"].to(torch.float16)
             labels_invasive_2 = batch["invasive_2"].to(torch.float16)
             labels_birads_2 = batch["BIRADS_scaled_2"].to(torch.float16)
+            label_difficult_negative_case_2 = batch["difficult_negative_case_2"].to(
+                torch.float16
+            )
 
         if phase == "train":
             with torch.set_grad_enabled(True):
@@ -121,48 +135,25 @@ class Forwarder(nn.Module):
                 logits_age = self.model.head.head_age(embed_features)
                 logits_machine_id = self.model.head.head_machine_id(embed_features)
                 logits_site_id = self.model.head.head_site_id(embed_features)
-            loss = self.loss(
-                logits=logits,
-                logits_biopsy=logits_biopsy,
-                logits_invasive=logits_invasive,
-                logits_birads=logits_birads,
-                logits_age=logits_age,
-                logits_machine_id=logits_machine_id,
-                logits_site_id=logits_site_id,
-                labels=labels,
-                labels_biospy=labels_biospy,
-                labels_invasive=labels_invasive,
-                labels_birads=labels_birads,
-                labels_age=labels_age,
-                labels_machine_id=labels_machine_id,
-                labels_site_id=labels_site_id,
-            )
+                logits_difficult_negative_case = (
+                    self.model.head.head_difficult_negative_case(embed_features)
+                )
+
             if use_multi_lat:
                 logits_2 = self.model.head.head_2(embed_features)
                 logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
                 logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
                 logits_birads_2 = self.model.head.head_birads_2(embed_features)
-                loss += self.loss(
-                    logits=logits_2,
-                    logits_biopsy=logits_biopsy_2,
-                    logits_invasive=logits_invasive_2,
-                    logits_birads=logits_birads_2,
-                    logits_age=logits_age,
-                    logits_machine_id=logits_machine_id,
-                    logits_site_id=logits_site_id,
-                    labels=labels_2,
-                    labels_biospy=labels_biospy_2,
-                    labels_invasive=labels_invasive_2,
-                    labels_birads=labels_birads_2,
-                    labels_age=labels_age,
-                    labels_machine_id=labels_machine_id,
-                    labels_site_id=labels_site_id,
+                logits_difficult_negative_case_2 = (
+                    self.model.head.head_difficult_negative_case_2(embed_features)
                 )
+
             else:
                 logits_2 = logits
                 logits_biopsy_2 = logits_biopsy
                 logits_invasive_2 = logits_invasive
                 logits_birads_2 = logits_birads
+                logits_difficult_negative_case_2 = logits_difficult_negative_case
         else:
             if phase == "test":
                 with self.ema.average_parameters():
@@ -173,6 +164,9 @@ class Forwarder(nn.Module):
                     logits_biopsy = self.model.head.head_biopsy(embed_features)
                     logits_invasive = self.model.head.head_invasive(embed_features)
                     logits_birads = self.model.head.head_birads(embed_features)
+                    logits_difficult_negative_case = (
+                        self.model.head.head_difficult_negative_case(embed_features)
+                    )
                     logits_age = self.model.head.head_age(embed_features)
                     logits_machine_id = self.model.head.head_machine_id(embed_features)
                     logits_site_id = self.model.head.head_site_id(embed_features)
@@ -183,6 +177,11 @@ class Forwarder(nn.Module):
                             embed_features
                         )
                         logits_birads_2 = self.model.head.head_birads_2(embed_features)
+                        logits_difficult_negative_case_2 = (
+                            self.model.head.head_difficult_negative_case_2(
+                                embed_features
+                            )
+                        )
             elif phase == "val":
                 embed_features = self.model.forward_features(inputs)
                 if use_multi_view:
@@ -191,6 +190,9 @@ class Forwarder(nn.Module):
                 logits_biopsy = self.model.head.head_biopsy(embed_features)
                 logits_invasive = self.model.head.head_invasive(embed_features)
                 logits_birads = self.model.head.head_birads(embed_features)
+                logits_difficult_negative_case = (
+                    self.model.head.head_difficult_negative_case(embed_features)
+                )
                 logits_age = self.model.head.head_age(embed_features)
                 logits_machine_id = self.model.head.head_machine_id(embed_features)
                 logits_site_id = self.model.head.head_site_id(embed_features)
@@ -199,45 +201,53 @@ class Forwarder(nn.Module):
                     logits_biopsy_2 = self.model.head.head_biopsy_2(embed_features)
                     logits_invasive_2 = self.model.head.head_invasive_2(embed_features)
                     logits_birads_2 = self.model.head.head_birads_2(embed_features)
+                    logits_difficult_negative_case_2 = (
+                        self.model.head.head_difficult_negative_case_2(embed_features)
+                    )
                 else:
                     logits_2 = logits
                     logits_biopsy_2 = logits_biopsy
                     logits_invasive_2 = logits_invasive
                     logits_birads_2 = logits_birads
+                    logits_difficult_negative_case_2 = logits_difficult_negative_case
 
-            loss = self.loss(
-                logits=logits,
-                logits_biopsy=logits_biopsy,
-                logits_invasive=logits_invasive,
-                logits_birads=logits_birads,
+        loss = self.loss(
+            logits=logits,
+            logits_biopsy=logits_biopsy,
+            logits_invasive=logits_invasive,
+            logits_birads=logits_birads,
+            logits_difficult_negative_case=logits_difficult_negative_case,
+            logits_age=logits_age,
+            logits_machine_id=logits_machine_id,
+            logits_site_id=logits_site_id,
+            labels=labels,
+            labels_biospy=labels_biospy,
+            labels_invasive=labels_invasive,
+            labels_birads=labels_birads,
+            label_difficult_negative_case=label_difficult_negative_case,
+            labels_age=labels_age,
+            labels_machine_id=labels_machine_id,
+            labels_site_id=labels_site_id,
+        )
+        if use_multi_lat:
+            loss += self.loss(
+                logits=logits_2,
+                logits_biopsy=logits_biopsy_2,
+                logits_invasive=logits_invasive_2,
+                logits_birads=logits_birads_2,
+                logits_difficult_negative_case=logits_difficult_negative_case_2,
                 logits_age=logits_age,
                 logits_machine_id=logits_machine_id,
                 logits_site_id=logits_site_id,
-                labels=labels,
-                labels_biospy=labels_biospy,
-                labels_invasive=labels_invasive,
-                labels_birads=labels_birads,
+                labels=labels_2,
+                labels_biospy=labels_biospy_2,
+                labels_invasive=labels_invasive_2,
+                labels_birads=labels_birads_2,
+                label_difficult_negative_case=label_difficult_negative_case_2,
                 labels_age=labels_age,
                 labels_machine_id=labels_machine_id,
                 labels_site_id=labels_site_id,
             )
-            if use_multi_lat:
-                loss += self.loss(
-                    logits=logits_2,
-                    logits_biopsy=logits_biopsy_2,
-                    logits_invasive=logits_invasive_2,
-                    logits_birads=logits_birads_2,
-                    logits_age=logits_age,
-                    logits_machine_id=logits_machine_id,
-                    logits_site_id=logits_site_id,
-                    labels=labels_2,
-                    labels_biospy=labels_biospy_2,
-                    labels_invasive=labels_invasive_2,
-                    labels_birads=labels_birads_2,
-                    labels_age=labels_age,
-                    labels_machine_id=labels_machine_id,
-                    labels_site_id=labels_site_id,
-                )
 
         return (
             logits,
@@ -246,6 +256,7 @@ class Forwarder(nn.Module):
             logits_biopsy,
             logits_invasive,
             logits_birads,
+            logits_difficult_negative_case,
             logits_age,
             logits_machine_id,
             logits_site_id,
@@ -253,4 +264,5 @@ class Forwarder(nn.Module):
             logits_biopsy_2,
             logits_invasive_2,
             logits_birads_2,
+            logits_difficult_negative_case_2,
         )
