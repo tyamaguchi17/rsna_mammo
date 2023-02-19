@@ -29,6 +29,11 @@ def main(args):
                 recursive=True,
             )[0]
             shutil.copyfile(weights_path, fold_dir / "model_weights_ema.pth")
+            config_path = glob.glob(
+                f"../results/{exp_name}_fold_{i}/**/config.yaml",
+                recursive=True,
+            )[0]
+            shutil.copyfile(config_path, fold_dir / "config.yaml")
             oof_path = glob.glob(
                 f"../results/{exp_name}_fold_{i}/**/test_results_view.csv",
                 recursive=True,
