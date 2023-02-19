@@ -1,0 +1,3 @@
+[submodule "global_objectives_pytorch"]
+	path = global_objectives_pytorch
+	url = https://github.com/Shlomix/global_objectives_pytorch.git
