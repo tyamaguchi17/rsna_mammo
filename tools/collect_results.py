@@ -9,7 +9,7 @@ import pandas as pd
 def parse():
     parser = argparse.ArgumentParser(description="")
     parser.add_argument("--exp_name", type=str)
-    parser.add_argument("--fold", type=int, default=0)
+    parser.add_argument("--fold", type=int, default=4)
     args = parser.parse_args()
     return args
 
@@ -40,7 +40,7 @@ def main(args):
             oof = pd.concat([oof, df]).reset_index(drop=True)
         oof.to_csv(outdir / "oof.csv", index=False)
     else:
-        weights_path = glob.glob(f"results/{exp_name}/**/model_weights_ema.pth")[0]
+        weights_path = glob.glob(f"../results/{exp_name}/**/model_weights_ema.pth")[0]
         shutil.copyfile(weights_path, outdir / "model_weights_ema.pth")
 
 
