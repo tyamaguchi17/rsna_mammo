@@ -42,7 +42,7 @@ def main(args):
             df["patient_id"] = df["patient_id"].astype(int)
             df["laterality"] = df["laterality"].map({0: "L", 1: "R"})
             df["prediction_id"] = df["patient_id"].astype(str) + "_" + df["laterality"]
-            df["fold"] = fold
+            df["fold"] = i
             df["cancer"] = df["label"]
             df = df.drop("label", axis=1)
             oof = pd.concat([oof, df]).reset_index(drop=True)
