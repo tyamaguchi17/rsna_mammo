@@ -30,7 +30,7 @@ def main(args):
             )[0]
             shutil.copyfile(weights_path, fold_dir / "model_weights_ema.pth")
             config_path = glob.glob(
-                f"../results/{exp_name}_fold_{i}/**/config.yaml",
+                f"../results/{exp_name}_fold_{i}/.hydra/config.yaml",
                 recursive=True,
             )[0]
             shutil.copyfile(config_path, fold_dir / "config.yaml")
