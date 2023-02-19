@@ -19,7 +19,7 @@ class Forwarder(nn.Module):
         self.pr_auc_loss = AUCPRLoss()
 
     def loss_pr_auc(self, logits, labels):
-        return 1 + 10 * self.auc_pr_loss(logits, labels)
+        return 1 + 10 * self.pr_auc_loss(logits, labels)
 
     def loss_bce(
         self,
