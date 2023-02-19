@@ -24,11 +24,11 @@ def main(args):
         for i in range(fold):
             fold_dir = (outdir / f"fold_{i}").mkdir(exist_ok=True)
             weights_path = glob.glob(
-                f"results/{exp_name}_fold_{i}/**/model_weights_ema.pth"
+                f"../results/{exp_name}_fold_{i}/**/model_weights_ema.pth"
             )[0]
             shutil.copyfile(weights_path, fold_dir / "model_weights_ema.pth")
             oof_path = glob.glob(
-                f"results/{exp_name}_fold_{i}/**/test_results_view.csv"
+                f"../results/{exp_name}_fold_{i}/**/test_results_view.csv"
             )[0]
             df = pd.read_csv(oof_path)
             df["patient_id"] = df["patient_id"].astype(int)
