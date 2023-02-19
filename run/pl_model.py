@@ -129,7 +129,7 @@ class PLModel(LightningModule):
 
     def training_step(self, batch: Dict[str, Tensor], batch_idx: int):
         additional_info = {}
-        _, loss, _, _, _, _, _, _, _, _, _, _, _ = self.forwarder.forward(
+        _, loss, _, _, _, _, _, _, _, _, _, _, _, _, _ = self.forwarder.forward(
             batch, phase="train", epoch=self.current_epoch, **additional_info
         )
 
