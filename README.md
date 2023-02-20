@@ -65,8 +65,10 @@ root@(container_id):/home/working/rsna_mammo# python -m run.train \
     out_dir=../results/convnext_base_baseline_fold_0
 ```
 
+複数gpuを使う場合は`training.num_gpus`を変更し、`training.batch_size`と`training.accumulate_grad_batches`の積が一定になるように`training.batch_size`を大きくすると良さそう。
+
 ## 学習後
-学習が終わると実行時に設定したoutdir内に結果ファイルが格納される。学習終了時にはema weightでscoreKさんが行われる。outdir内のdirectory構成は
+学習が終わると実行時に設定したoutdir内に結果ファイルが格納される。学習終了時にはema weightでscore計算が行われる。outdir内のdirectory構成は
 ```
 $ ls
 rsna_mammo  rsna_mammo.log  test_results  wandb  weights
