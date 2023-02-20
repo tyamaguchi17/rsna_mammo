@@ -35,7 +35,7 @@ def main(args):
             )[0]
             shutil.copyfile(config_path, fold_dir / "config.yaml")
             oof_path = glob.glob(
-                f"../results/{exp_name}_fold_{i}/**/test_results_view.csv",
+                f"../results/{exp_name}_fold_{i}/**/test_results_breast.csv",
                 recursive=True,
             )[0]
             df = pd.read_csv(oof_path)
