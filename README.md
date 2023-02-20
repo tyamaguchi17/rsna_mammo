@@ -22,7 +22,7 @@ $ docker compose -f docker/docker-compose.yaml up
 
 containerに入る
 ```
-$ docker exec -it (container id) bash
+$ docker exec -it (container_id) bash
 ```
 
 containerの中でrepository内に入り必要なライブラリをinstallする。
