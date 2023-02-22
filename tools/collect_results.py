@@ -20,6 +20,10 @@ def main(args):
     outdir = Path(f"../{exp_name}")
     outdir.mkdir(exist_ok=True)
     oof = pd.DataFrame()
+    train_df = pd.read_csv("./fold/train_with_fold.csv")
+    train_df["prediction_id"] = train_df["patient_id"].astype(str) + "_" + train_df["laterality"]
+    train_df = train_df[["prediction_id", "cancer", "site_id", "age"]]
+    train_df = train_df.drop_duplicates().reset_index(drop=True)
     if fold > 0:
         for i in range(fold):
             fold_dir = outdir / f"fold_{i}"
@@ -46,6 +50,7 @@ def main(args):
             df["cancer"] = df["label"]
             df = df.drop("label", axis=1)
             oof = pd.concat([oof, df]).reset_index(drop=True)
+        oof = oof.merge(train_df[["prediction_id", "site_id"]], on="prediction_id")
         oof.to_csv(outdir / "oof.csv", index=False)
     else:
         weights_path = glob.glob(f"../results/{exp_name}/**/model_weights_ema.pth")[0]
