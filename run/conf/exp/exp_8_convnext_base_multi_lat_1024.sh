@@ -27,4 +27,4 @@ python -m run.train \
   forwarder.loss.age_weight=0.5 \
   training.accumulate_grad_batches=8 \
   training.use_wandb=true \
-  out_dir=../results/convnext_base_multi_lat_1536_fold_$FOLD; done
+  out_dir=../results/convnext_base_multi_lat_1024_fold_$FOLD; done
