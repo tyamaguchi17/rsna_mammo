@@ -1,31 +1,33 @@
-## 前提
-nvidia-driverが入っていることとdocker composeが使える必要がある。
-repositoryをcloneする。
+## Prerequisites
+Using docker compose is recommended.
+
+
+Clone this repository
 ```
 git clone https://github.com/tyamaguchi17/rsna_mammo.git --recursive
 ```
 
-## Directory構成
+## Directory Structures
 ```
 $ ls
 data  rsna_mammo  results
 ```
-のようにinput/output directoryとrepositoryを同じ階層に配置する。dataのdirectory構造は `f"data/{patient_id}/{image_id}.png"`のようにする。コンペデータとvindrが同様の形式で配置されていることを想定しており、https://www.kaggle.com/datasets/analokamus/rsna-mammo-vindr-2048 を落としてきてsymblic linkを貼る等すると良い。
+Place the input/output directory and repository in the same directory as above. The directory structure of data should be like `f "data/{patient_id}/{image_id}.png"`. The image files (.png) are assumed to have been resized to (2048, 2048).
 
 
-## 実行環境
-(tmux上で)docker composeコマンドでcontainerを作る。
+## Execution Environments
+Use docker compose command and make a container.
 ```
 $ cd rsna_mammo
 $ docker compose -f docker/docker-compose.yaml up
 ```
 
-containerに入る
+Enter into the container.
 ```
 $ docker exec -it (container_id) bash
 ```
 
-containerの中でrepository内に入り必要なライブラリをinstallする。
+Install required libraries
 ```
 root@(container_id):/home/working# cd rsna_mammo
 root@(container_id):/home/working/rsna_mammo# ls ..
@@ -33,17 +35,22 @@ data  rsna_mammo  results
 root@(container_id):/home/working/rsna_mammo# pip install -r requirements.txt
 ```
 
-必要に応じてwandbにloginする。
+Log in to wandb if you like.
 ```
 root@(container_id):/home/working/rsna_mammo# wandb login
 ```
 
-## 学習コマンド
-- shファイルを実行する方法
+## Training Commands
+- Using bash command
 ```
-root@(container_id):/home/working/rsna_mammo# bash run/conf/exp/exp_xx_yy.bash
+root@(container_id):/home/working/rsna_mammo# bash run/conf/exp/exp_xx_yy.sh
 ```
-- pythonコマンドで実行する方法(一例)
+The models used in the final submission will be reproduced by
+```
+root@(container_id):/home/working/rsna_mammo# bash run/conf/exp/exp_final.sh
+```
+
+- Using python command (example)
 ```
 root@(container_id):/home/working/rsna_mammo# python -m run.train \
     dataset.num_folds=4 \
@@ -65,22 +72,23 @@ root@(container_id):/home/working/rsna_mammo# python -m run.train \
     out_dir=../results/convnext_base_baseline_fold_0
 ```
 
-複数gpuを使う場合は`training.num_gpus`を変更し、`training.batch_size`と`training.accumulate_grad_batches`の積が一定になるように`training.batch_size`を大きくすると良さそう。
-
-## 学習後
-学習が終わると実行時に設定したoutdir内に結果ファイルが格納される。学習終了時にはema weightでscore計算が行われる。outdir内のdirectory構成は
+## After Training
+When training is completed, the result file is stored in the out_dir. At the end of training, score calculation is performed using ema weight.
 ```
 $ ls
 rsna_mammo  rsna_mammo.log  test_results  wandb  weights
 ```
 
-`${outdir}/rsna_mammo/${job_id}/checkpoint`内にckptとweightが保存される。`model_weights.pth`がbest epoch (aucとpr_aucの平均をmonitorしている)の重み、`model_weights_ema.pth`がemaされた重み。
+Checkpoints and weights are stored in `${outdir}/rsna_mammo/${job_id}/checkpoint`. `model_weights.pth` is the weights of the best epoch (the average of auc and pr_auc is monitored.) and `model_weights_ema.pth` is the ema weights.
 
-`(outdir)/weights`に各epochの重み、`${outdir}/test_results`に各epochの推論結果とema weightで推論した結果のcsvファイルが格納される。ファイル名が`results_breast.csv`で終わっているものがbreast levelの予測結果で `results.csv`で終わっているのがimage levelの予測結果。ema weightで予測した結果のファイル名は `test_results_breast.csv` と `test_results.csv`
-
-次のコマンドでweightとoofを1つのdirectoryにまとめることができる(`outdir=${exp_name}_fold_${FOLD}`のように設定しているとする)。
+You can collect weights and oof into one directory with the following command (assuming you have set `out_dir=${exp_name}_fold_${FOLD}`. Example:  `exp_name=convnext_small_multi_lat_final`)
 ```
 root@(container_id):/home/working/rsna_mammo# python tools/collect_results.py --exp_name ${exp_name}
 ```
 
-`/home/working`以下に`${exp_name}`というdirectoryができ、ema weight, config file, oof.csvが格納され、kaggle datasetにuploadすることでsubmissionにそのまま使用できる。
+A `${exp_name}` directory is created under `/home/working`, where ema weight, config file, and oof.csv are stored, and can be directly used for submission by uploading them to the kaggle dataset.
+
+## Links
+- For an overview of our key ideas and detailed explanation, please also refer to [6th place solution](https://www.kaggle.com/competitions/rsna-breast-cancer-detection/discussion/390974) in Kaggle discussion.
+- RabotniKuma part -> https://github.com/analokmaus/kaggle-rsna-breast-cancer
+- YOLOX(ishikei) part -> https://github.com/ishikei14k/RSNA_Screening_Mammography_Breast_Cancer_Detection
