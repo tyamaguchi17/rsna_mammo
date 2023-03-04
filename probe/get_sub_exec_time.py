@@ -4,6 +4,13 @@ from datetime import timezone
 
 from kaggle.api.kaggle_api_extended import KaggleApi
 
+
+"""
+https://zenn.dev/currypurin/scraps/47d5f84a0ca89d
+"""
+
+
+
 api = KaggleApi()
 api.authenticate()
 
